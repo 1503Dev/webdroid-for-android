@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Webdroid Studio For Android</string>
+    <string name="activity.MainActivity">Webdroid Studio</string>
+	<string name="activity.MainActivity.request_permission">请求权限</string>
+    <string name="s.pack">打包</string>
+    <string name="s.about">关于</string>
+    <string name="s.open_source">开放源代码许可</string>
+    <string name="s.explanation">说明</string>
+</resources>

@@ -1,0 +1,20 @@
+Signature-Version: 1.0
+Created-By: Android Gradle 8.4
+SHA-256-Digest-Manifest: efRVURf1ORJqEWHBcARz9I/r61L+n6+XLLasuWkeOO8=
+X-Android-APK-Signed: 2, 3
+
+Name: AndroidManifest.xml
+SHA-256-Digest: eZAm+DzhKSozTh8jxSWb3HhJtEwqJqJ+2GEer5JchJQ=
+
+Name: classes.dex
+SHA-256-Digest: ZvE+BIinNhJTzRVcJruQjw2ckdpTYFsy+1iqBRRje+8=
+
+Name: res/drawable/ic_launcher.png
+SHA-256-Digest: kpr/vCNPxOpir+7w5OubszstwibERfFwpQlLm4caFto=
+
+Name: res/layout/activity_main.xml
+SHA-256-Digest: i3sz9XmqT3yl/d3Jae9Bz0K7rb1OEhCB28+B4524vmg=
+
+Name: resources.arsc
+SHA-256-Digest: Katv8r/Ys3GEi5QPEpNl7EnY+4HbrwFnUnCiFAgVpus=
+
