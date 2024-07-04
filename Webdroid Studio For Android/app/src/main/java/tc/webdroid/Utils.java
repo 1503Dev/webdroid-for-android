@@ -93,4 +93,19 @@ public class Utils{
 			}
 		}
 	}
+
+	public static String readAssetsFile(AssetManager assetManager, String path) {
+		StringBuilder fileContent = new StringBuilder();
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(assetManager.open(path)));
+			String line;
+			while ((line = reader.readLine()) != null) {
+				fileContent.append(line).append("\n");
+			}
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return fileContent.toString();
+	}
 }

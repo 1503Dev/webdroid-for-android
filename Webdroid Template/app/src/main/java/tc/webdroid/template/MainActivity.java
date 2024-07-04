@@ -21,9 +21,11 @@ public class MainActivity extends Activity {
         }
         DedroidWeb.WebPage wp=new DedroidWeb.WebPage(this,"file:///android_asset/index.html");
 		wv=wp.getWebView();
-		JsBridge.setAttr(this,this);
+		JsBridge.setAttr(this,this,wv);
 		wv.addJavascriptInterface(new JsBridge.webdroid(),"webdroid");
 		wv.addJavascriptInterface(new JsBridge.webdroid_toast(),"webdroid_toast");
+		wv.addJavascriptInterface(new JsBridge.webdroid_dialog(),"webdroid_dialog");
+		wv.addJavascriptInterface(new JsBridge.webdroid_http(),"webdroid_http");
 		WebSettings settings = wv.getSettings();
         settings.setUseWideViewPort(true);//设定支持viewport
         settings.setLoadWithOverviewMode(true);   //自适应屏幕
