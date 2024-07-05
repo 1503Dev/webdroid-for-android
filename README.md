@@ -1,4 +1,6 @@
 # Webdroid Studio For Android
+![JSAPI version](https://img.shields.io/badge/JSAPI-3-blue)
+
 简体中文
 
 轻松把你的HTML打包成APK
@@ -13,8 +15,10 @@
 ```
 ProjectName/
   WebdroidManifest.json
+  icon.png (应用图标)
+  build/
+    app.apk (打包后的apk，未签名)
   html/
-    icon.png (应用图标)
     index.html
     script.js
     style.css
@@ -47,15 +51,4 @@ ProjectName/
 ### Dedroid
 应用内集成了 [DedroidUtil](https://github.com/TheChuan1503/DedroidUtil/) (版本:9) 的 `Dedroid` 和 `Plugin` 接口
 ### Webdroid
-所有api结构都是`webdroid_子类.功能(参数)`
-
-`[]`内的为可选参数
-#### Webdroid
-- int **webdroid.getVersion()** *获取内核版本*
-
-#### Toast
-- **webdroid_toast.make(String text)** *弹出2秒提示*
-- **webdroid_toast.makeLong(String text)** *弹出3秒提示*
-
-#### Dialog
-- **webdroid_dialog.alert([String 标题,]String 内容[,能否取消])** *弹出普通弹窗*
+[JSAPI.md](JSAPI.md)

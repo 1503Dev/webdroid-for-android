@@ -15,6 +15,21 @@
     <!-- 拥有完全的网络访问权限 -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
+    <!-- INSTANT_APP_FOREGROUND_SERVICE -->
+    <uses-permission android:name="android.permission.INSTANT_APP_FOREGROUND_SERVICE"/>
+
+    <!-- BIND_VPN_SERVICE -->
+    <uses-permission android:name="android.permission.BIND_VPN_SERVICE"/>
+
+    <!-- 查看网络连接 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+    <!-- 查看WLAN连接 -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+
+    <!-- BIND_QUICK_ACCESS_WALLET_SERVICE -->
+    <uses-permission android:name="android.permission.BIND_QUICK_ACCESS_WALLET_SERVICE"/>
+
     <application
         android:icon="@drawable/ic_launcher"
         android:label="AppName"

@@ -105,38 +105,37 @@ public class MainActivity extends Activity {
 		DedroidFile.write(projectPath+"/WebdroidManifest.json",manifestRoot.toString());
 		DedroidFile.mkdir(projectPath+"/html");
 		Utils.copyAssetToExternalStorage(mc,"project_core/html/index.html",projectPath+"/html/index.html");
-		Utils.copyAssetToExternalStorage(mc, "app_core/res/drawable/ic_launcher.png", projectPath+"/icon.png");
+		Utils.copyAssetToExternalStorage(mc, "project_core/icon.png", projectPath+"/icon.png");
 		DedroidToast.toast(mc,"创建成功");
 		DedroidDialog.alert(mc,"创建成功","项目已在\n"+projectPath+"\n创建",true);
 		dialog_creator.cancel();
 	}
+    public void test(View v){
+        new DedroidWeb.WebPage(this,"file:///android_asset/local_html/index.html");
+    }
 	public void pack(final View v,final String projectName){
 		new Handler(Looper.getMainLooper()).postDelayed(new Runnable(){
 
                 @Override
                 public void run() {
-
+					
                     v.setEnabled(false);
                     String rootPath=DedroidFile.EXTERN_STO_PATH+"/1503Dev/.WebdroidAppCoreTemp";
                     String projectPath=DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects/"+projectName;
-                    
                     DedroidFile.del(rootPath);
-                    DedroidFile.mkdir(rootPath+"/META-INF");
-                    DedroidFile.mkdir(rootPath+"/res/drawable");
+                    DedroidFile.mkdir(rootPath);
                     try
                     {
-                        Utils.copyAssetToExternalStorage(mc, "app_core/AndroidManifest.xml", rootPath+"/AndroidManifest.xml");
-                        Utils.copyAssetToExternalStorage(mc, "app_core/classes.dex", rootPath+"/classes.dex");
-                        Utils.copyAssetToExternalStorage(mc, "app_core/resources.arsc", rootPath+"/resources.arsc");
-                        Utils.copyAssetToExternalStorage(mc, "app_core/res/drawable/ic_launcher.png", rootPath+"/res/drawable/ic_launcher.png");
-                        Utils.copyAssetToExternalStorage(mc, "app_core/META-INF/ANDROID.RSA", rootPath+"/META-INF/ANDROID.RSA");
-                        Utils.copyAssetToExternalStorage(mc, "app_core/META-INF/ANDROID.SF", rootPath+"/META-INF/ANDROID.SF");
-                        Utils.copyAssetToExternalStorage(mc, "app_core/META-INF/MANIFEST.MF", rootPath+"/META-INF/MANIFEST.MF");
+                        Utils.copyAssetToExternalStorage(mc, "app_core.zip", rootPath+"/app_core.zip");
+						DedroidFile.mkdir(rootPath+"/res/drawable");
+						DedroidFile.mkdir(rootPath+"/META-INF/proguard");
+                        Utils.unzip(rootPath+"/app_core.zip",rootPath);
+                        DedroidFile.del(rootPath+"/app_core.zip");
                     }
                     catch (IOException e)
                     {
                         v.setEnabled(true);
-                        DedroidToast.toast(mc,"内核加载失败，请检查是否拥有权限");
+                        DedroidToast.toast(mc,"内核加载失败\n"+e);
                         return;
                     }
                     try
@@ -154,10 +153,11 @@ public class MainActivity extends Activity {
                         {
                             DedroidFile.write(rootPath+"/AndroidManifest.xml",new aXMLEncoder().encodeString(mc, manifestXml));
 							DedroidFile.copy(projectPath+"/icon.png",rootPath+"/res/drawable/ic_launcher.png");
-                            Utils.zipFolderWithoutRoot(rootPath,projectPath+"/app.apk");
+							DedroidFile.mkdir(projectPath+"/build");
+                            Utils.zipFolderWithoutRoot(rootPath,projectPath+"/build/app.apk");
                             DedroidFile.del(rootPath);
                             DedroidToast.toast(mc,"项目打包成功，请自行签名");
-                            DedroidDialog.alert(mc,"成功","文件已保存在\n"+projectPath+"/app.apk\n请自行签名",true);
+                            DedroidDialog.alert(mc,"成功","文件已保存在\n"+projectPath+"/build/app.apk\n请自行签名",true);
                             v.setEnabled(true);
                         }
                         catch (IOException e)

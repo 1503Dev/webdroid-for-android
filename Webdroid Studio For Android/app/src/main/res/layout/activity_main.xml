@@ -10,7 +10,7 @@
 
 	<LinearLayout
 		android:layout_width="wrap_content"
-		android:layout_height="match_parent"
+		android:layout_height="wrap_content"
 		android:orientation="vertical"
 		android:gravity="center">
 
@@ -68,9 +68,15 @@
 		<TextView
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:text="VERSION 1.0.1\nCORE_VERSION 2"/>
+			android:text="VERSION 1.1.0\nCORE_VERSION 3"/>
 
 	</LinearLayout>
+
+	<Button
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="实验室"
+		android:onClick="test"/>
 
 </LinearLayout>
 

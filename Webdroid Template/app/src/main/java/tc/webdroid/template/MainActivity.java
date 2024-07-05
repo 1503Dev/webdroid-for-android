@@ -23,9 +23,7 @@ public class MainActivity extends Activity {
 		wv=wp.getWebView();
 		JsBridge.setAttr(this,this,wv);
 		wv.addJavascriptInterface(new JsBridge.webdroid(),"webdroid");
-		wv.addJavascriptInterface(new JsBridge.webdroid_toast(),"webdroid_toast");
-		wv.addJavascriptInterface(new JsBridge.webdroid_dialog(),"webdroid_dialog");
-		wv.addJavascriptInterface(new JsBridge.webdroid_http(),"webdroid_http");
+		wv.addJavascriptInterface(new JsBridge.webdroid(),"wd");
 		WebSettings settings = wv.getSettings();
         settings.setUseWideViewPort(true);//设定支持viewport
         settings.setLoadWithOverviewMode(true);   //自适应屏幕

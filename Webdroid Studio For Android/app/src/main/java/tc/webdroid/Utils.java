@@ -108,4 +108,43 @@ public class Utils{
 		}
 		return fileContent.toString();
 	}
+    public static void unzip(String zipFileString, String outputFolderString) throws IOException {
+        File destDir = new File(outputFolderString);
+        if (!destDir.exists()) {
+            destDir.mkdir();
+        }
+
+        ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFileString));
+        ZipEntry entry = zipIn.getNextEntry();
+
+        while (entry != null) {
+            String filePath = outputFolderString + File.separator + entry.getName();
+            if (!entry.isDirectory()) {
+                extractFile(zipIn, filePath);
+            } else {
+                File dir = new File(filePath);
+                dir.mkdirs();
+            }
+            zipIn.closeEntry();
+            entry = zipIn.getNextEntry();
+        }
+
+        zipIn.close();
+    }
+
+    /**
+     * 提取单个条目
+     * @param zipIn ZIP输入流
+     * @param filePath 输出文件路径
+     * @throws IOException
+     */
+    private static void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
+        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath));
+        byte[] bytesIn = new byte[4096];
+        int read = 0;
+        while ((read = zipIn.read(bytesIn)) != -1) {
+            bos.write(bytesIn, 0, read);
+        }
+        bos.close();
+    }
 }
