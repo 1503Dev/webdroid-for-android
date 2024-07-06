@@ -22,7 +22,7 @@ public class JsBridge
 	static private Context _context;
 	static private Activity _activity;
 	static private WebView _webview;
-	static private int webdroidApiVersion=3;
+	static private int webdroidApiVersion=4;
 	static public List<String> blockedUrls=new ArrayList<>();
 	
 	static public void setAttr(Context ctx, Activity act, WebView wv)
@@ -77,6 +77,15 @@ public class JsBridge
 		public String getStorageUrl(){
 			return "file://"+DedroidFile.EXTERN_STO_PATH+"/";
 		}
+		//设置
+		@JavascriptInterface
+		public Boolean setIndexUrl(String url){
+			return DedroidConfig.putString(_context,"settings","index_url",url);
+		}
+		@JavascriptInterface
+		public String getIndexUrl(){
+			return DedroidConfig.getString(_context,"settings","index_url");
+		}
 		//文件
 		@JavascriptInterface
 		public String getStoragePath(){
@@ -93,6 +102,24 @@ public class JsBridge
 		@JavascriptInterface
 		public String listFile(String path){
 			return new JSONArray(DedroidFile.listName(path)).toString();
+		}
+		@JavascriptInterface
+		public boolean openFile(String fp){
+			File file = new File(fp);
+			if (file.exists()) {
+				Uri uri = Uri.fromFile(file);
+				Intent intent = new Intent(Intent.ACTION_VIEW);
+				intent.setDataAndType(uri, "*/*");
+				intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				if (intent.resolveActivity(_context.getPackageManager()) != null) {
+					_activity.startActivity(intent);
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
 		}
 		// 软件包
 		@JavascriptInterface
@@ -150,6 +177,15 @@ public class JsBridge
 			} catch (Exception e) {
 				return false;
 			}
+		}
+		// 配置
+		@JavascriptInterface
+		public void putString(String key,String value){
+			DedroidConfig.putString(_context,"webdroid_localstorage",key,value);
+		}
+		@JavascriptInterface
+		public String getString(String key){
+			return DedroidConfig.getString(_context,"webdroid_localstorage",key);
 		}
 		// 系统
 		@JavascriptInterface
@@ -222,7 +258,33 @@ public class JsBridge
 			}
 			return false;
 		}
+		@JavascriptInterface
+		public boolean isDarkMode() {
+			if(Utils.getSdk()<29) return false;
+			UiModeManager uiModeManager = (UiModeManager) _context.getSystemService(Context.UI_MODE_SERVICE);
+			if (uiModeManager != null) {
+				return uiModeManager.getNightMode() == UiModeManager.MODE_NIGHT_YES;
+			}	
+			return false;
+		}
 		// 网络
+		@JavascriptInterface
+		public Boolean isNetworkAvailable(){
+			return DedroidNetwork.isNetworkAvailable(_context);
+		}
+		@JavascriptInterface
+		public void regNetworkChangeEvent(final String callback){
+			new DedroidNetwork.onChange(_activity,new DedroidNetwork.onChangeCallback(){
+
+					@Override
+					public void onChange(boolean state)
+					{
+						_webview.evaluateJavascript(callback+"("+state+")",null);
+					}
+
+
+				},true);
+		}
 		@JavascriptInterface
 		public void downloadFile(String url,String localPath){
 			DedroidNetwork.download(url,localPath);

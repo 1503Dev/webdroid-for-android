@@ -2,14 +2,30 @@
 <html lang="zh-CN">
 
 <script>
-    const wv=wd.getAppName("com.google.android.webview")
-    const ver=parseInt(wd.getVersionName("com.google.android.webview").split(".")[0])
+    function getChromeVersion() {
+        var userAgent = navigator.userAgent;
+        var match = userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+        if (match !== null) {
+            return parseInt(match[2], 10);
+        } else {
+            return null;
+        }
+    }
+    let wv_pkg="com.google.android.webview"
+    if(!wd.isInstalled(wv_pkg)) wv_pkg="com.android.webview"
+    let wv=wd.getAppName(wv_pkg)
+    const ver=getChromeVersion()
+    if(ver==null) ver=parseInt(wd.getVersionName("com.google.android.webview").split(".")[0])
+    if(ver==""||!ver) ver=0
     if(ver<86){
-        wd.alert("你的"+wv+"版本("+ver+")过低(<86)，请更新"+wv)
+        wd.alert("警告","你的"+wv+"版本("+ver+")过低(<86)，请更新"+wv,false)
         wd.toastLong("你的"+wv+"版本("+ver+")过低(<86)，请更新"+wv)
         setTimeout(function(){
             wd.finishAndRemoveTask()
         },3000)
+    } else if(ver<99&&localStorage.getItem('first-launch')!="1"){
+        wd.alert("提示","你的"+wv+"版本("+ver+")<99，可能存在弹窗错位等问题",false)
+        localStorage.setItem("first-launch","1")
     }
 </script>
 
@@ -51,6 +67,10 @@
         
         [fab-save]{
             right:160px;
+        }
+        
+        [fab-code]{
+            right:224px;
         }
         
         mdui-list-item *{
@@ -110,6 +130,7 @@
             <mdui-fab icon="play_arrow" fab-run onclick="run()"></mdui-fab>
             <mdui-fab icon="archive" fab-pack onclick="pack()"></mdui-fab>
             <mdui-fab icon="save" fab-save onclick="save()"></mdui-fab>
+            <mdui-fab icon="code" fab-code onclick="wds.code(editing_project,false)"></mdui-fab>
         </div>
     </div>
     <div id="nav-3" class="nav mdui-prose">
@@ -118,11 +139,12 @@
         <mdui-list>
             <mdui-list-item rounded onclick="wd.requestPermission('android.permission.WRITE_EXTERNAL_STORAGE');wd.requestPermission('android.permission.MANAGE_EXTERNAL_STORAGE')" icon="perm_device_information">请求权限</mdui-list-item>
             <mdui-list-item rounded onclick="dialog_about.open=true" icon="info">关于</mdui-list-item>
+            <mdui-list-item rounded onclick="dev_options()" icon="logo_dev">开发人员选项</mdui-list-item>
         </mdui-list>
     </div>
 
     <mdui-navigation-bar value="1" label-visibility="selected">
-        <mdui-navigation-bar-item icon="list_alt" active-icon="list_alt--two-tone" value="1" href="javascript:switchNav(1)">项目</mdui-navigation-bar-item>
+        <mdui-navigation-bar-item icon="list_alt--outlined" active-icon="list_alt--two-tone" value="1" href="javascript:switchNav(1)">项目</mdui-navigation-bar-item>
         <mdui-navigation-bar-item icon="edit--outlined" active-icon="edit" value="2" href="javascript:switchNav(2)">编辑</mdui-navigation-bar-item>
         <mdui-navigation-bar-item icon="settings--outlined" active-icon="settings--filled" value="3" href="javascript:switchNav(3)">设置</mdui-navigation-bar-item>
     </mdui-navigation-bar>
@@ -149,41 +171,17 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
     </mdui-dialog>
     
     <script>
+        if(wd.isDarkMode()){
+            document.body.setAttribute("class","mdui-theme-dark")
+        }
         if (!("wds" in window)) {
             wds = {
-                projects:{
-                    project1:{
-                        app_name:"项目1",
-                        version_name:"1.0",
-                        version_code:1
-                    },
-                    project2:{
-                        app_name:"项目2",
-                        version_name:"1.2.3",
-                        version_code:1503
-                    }
-                },
-                create: function() {
-                    alert("Created")
-                },
                 listProject: function() {
-                    return '["project1","project2"]'
+                    return '[]'
                 },
                 getProjectDir:function(n){
                     return "http://localhost:8000/1503Dev/WebProjects/"+n+"/"
                 },
-                pack:function(n){
-                    alert("Packed")
-                },
-                getProjectInfo:function(n){
-                    return JSON.stringify(this.projects[n])
-                },
-                save:function(n,an,vn,vc){
-                    alert(`Saved ${n}\n${an}\n${vn}\n${vc}`)
-                },
-                run:function(n){
-                    alert("Runned "+n)
-                }
             }
         }
         
@@ -192,7 +190,7 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
         }
         
         function decode(s){
-            return decodeURIComponent(s).replace(/\+/g," ")
+            return decodeURIComponent(s)
         }
         
         now_nav=1
@@ -213,7 +211,7 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
         function loadProjects(){
             project_list.innerHTML=""
             let h=""
-            let projects=JSON.parse(wds.listProject())
+            projects=JSON.parse(wds.listProject())
             projects.forEach(function(e){
                 h=h+project_list_def.replace("{{ project_name }}",e)
                     .replace("{{ img }}",wds.getProjectDir(e)+"icon.png")
@@ -260,6 +258,31 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
         function run(){
             wds.run(editing_project)
         }
+        function dev_options(){
+            mdui.confirm({
+                headline:"警告",
+                description:"开发人员选项含有不稳定的内容，如果出错，请清除Webdroid Studio的数据，是否继续前往",
+                confirmText:"是",
+                closeOnOverlayClick:true,
+                onConfirm:function(){
+                    mdui.prompt({
+                        description: "输入调试码和调试内容",
+                        confirmText: "OK",
+                        cancelText: "Cancel",
+                        onConfirm: function(v){
+                            if(v.substring(0,8)=="wdsdevjs"){
+                                eval(v.substring(9))
+                            }
+                        }
+                    });
+                }
+            })
+        }
+        setInterval(function(){
+            if(projects!=JSON.parse(wds.listProject())){
+                loadProjects()
+            }
+        },1000)
         loadProjects()
     </script>
 </body>

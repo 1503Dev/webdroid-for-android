@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const project = urlParams.get('project');
+    if(!project||project=="") window.location.replace("?project=666")
+</script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" />
+    <meta name="renderer" content="webkit" />
+    <link rel="stylesheet" href="mdui/mdui.min.css">
+    <link rel="stylesheet" href="mdui/icon.css">
+    <script src="mdui/mdui.min.js"></script>
+    <script>
+        mdui.setColorScheme('#FF009688');
+    </script>
+    <script src="jq.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+    <style>
+        mdui-list-item *{
+            background:Transparent;
+        }
+        
+        *{
+            user-select:none;
+        }
+        
+        body{
+            padding:0px;
+            margin:0px;
+        }
+        
+        #editorView{
+            width:100%;
+            height:calc(100vh - 64px);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="inner">
+        <mdui-top-app-bar style="position: relative;box-shadow: 0px 1px 5px rgba(0,0,0,0.1);">
+            <mdui-button-icon icon="menu" onclick="dra_files.open = !dra_files.open"></mdui-button-icon>
+            <mdui-top-app-bar-title>
+                <script>
+                    document.write(project)
+                </script>
+            </mdui-top-app-bar-title>
+            <div style="flex-grow: 1"></div>
+            <mdui-button-icon icon="undo" onclick="undo()"></mdui-button-icon>
+            <mdui-button-icon icon="redo" onclick="redo()"></mdui-button-icon>
+            <mdui-button-icon icon="save" onclick="save();wd.toast('保存成功')"></mdui-button-icon>
+            <mdui-button-icon icon="play_arrow" onclick="save();wds.run(project)"></mdui-button-icon>
+        </mdui-top-app-bar>
+        
+        <div id="editorView"></div>
+    </div>
+    
+    <mdui-navigation-drawer close-on-overlay-click id="dra_files" open="false">
+        <mdui-button full-width onclick="openFile()">打开文件</mdui-button>
+    </mdui-navigation-drawer>
+
+    
+    <script>
+        var file="html/index.html"
+        var editor_theme="tomorrow"
+        if(wd.isDarkMode()){
+            document.body.setAttribute("class","mdui-theme-dark")
+            editor_theme="tomorrow_night"
+        }
+        function encode(s){
+            return encodeURIComponent(s)
+        }
+        function decode(s){
+            return decodeURIComponent(s)
+        }
+        function save(f=file){
+            let fp=wd.getStoragePath()+"/1503Dev/WebProjects/"+project+"/"+f
+            let c=Dedroid.writeFile(fp,editor.getSession().getValue())
+        }
+        function undo(){
+            if(editor.getSession().getUndoManager().canUndo()){
+                editor.undo()
+            } else wd.toast("不可撤销")
+        }
+        function redo(){
+            if(editor.getSession().getUndoManager().canRedo()){
+                editor.redo()
+            } else wd.toast("不可重做")
+        }
+        function getType(f){
+            r1=f.substring(f.length-4).toLowerCase()
+            r2=f.substring(f.length-3).toLowerCase()
+            r3=f.substring(f.length-2).toLowerCase()
+            if(r1=="html") return "html"
+            if(r1=="json") return "json"
+            if(r2=="htm") return "html"
+            if(r2=="css") return "css"
+            if(r3=="js") return "javascript"
+            return f
+        }
+        function initEditor(){
+            editor = ace.edit("editorView");
+            editor.setTheme("ace/theme/"+editor_theme);
+            ace.require("ace/ext/language_tools");
+            editor.session.setMode("ace/mode/html");
+            editor.setOptions({
+                enableBasicAutocompletion: true,
+                enableLiveAutocompletion: true,
+                fontSize: "14px",
+                showPrintMargin: false,
+                enableSnippets: true,
+                a:true
+            });
+        }
+        initEditor()
+        function loadContent(f=file){
+            let fp=wd.getStoragePath()+"/1503Dev/WebProjects/"+project+"/"+f
+            if((!wd.isFileExists(fp))||f=="/"||f==""){
+                wd.toast(fp+"不存在")
+                return
+            }
+            editor.session.setMode("ace/mode/"+getType(f));
+            file=f
+            let c=Dedroid.readFile(fp)
+            editor.setValue(c)
+            editor.getSession().getSelection().clearSelection()
+            editor.moveCursorTo(0,0,false)
+        }
+        loadContent(file)
+        function openFile(){
+            mdui.prompt({
+                description: "打开文件",
+                closeOnOverlayClick:true,
+                confirmText: "打开",
+                onOpen:function(d){
+                    d.childNodes.forEach(function(e){
+                        if(e.tagName.toLowerCase()=="mdui-text-field"){
+                            e.value=file
+                        }
+                    })
+                },
+                cancelText: "",
+                onCancel:function(){
+                    this.open=false
+                },
+                onConfirm: function(v){
+                    window.loadContent(v)
+                    dra_files.open=false
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

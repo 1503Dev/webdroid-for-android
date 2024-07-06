@@ -1,5 +1,5 @@
 # Webdroid Javascript Interface
-![JSAPI version](https://img.shields.io/badge/JSAPI-3-blue)
+![JSAPI version](https://img.shields.io/badge/JSAPI-4-blue)
 
 简体中文
 
@@ -19,6 +19,12 @@
   // String: 获取assets地址(file:///android_asset/)
   wd.getStorageUrl()
   // String: 返回储存根目录地址(file:///storage/emulated/0/)
+
+// 设置
+  wd.setIndexUrl(String url)
+  // void: 设置启动url(默认为file:///android_asset/index.html)
+  wd.getIndexUrl()
+  // String: 获取启动url
 
 // 文件
   wd.getStoragePath()
@@ -42,6 +48,12 @@
   wd.appSettings(String packageName)
   // Boolean: 打开指定应用的详情界面，返回是否能打开
 
+// 配置
+  wd.putString(String key, String value)
+  // void: 保存key的值为value
+  wd.getString(String key)
+  // String: 读取key的值
+
 // 系统
   wd.finish()
   // void: 结束当前Activity(假退出)
@@ -57,8 +69,14 @@
   // Boolean: 指定权限是否存在
   wd.isVpnConnected()
   // (实验) Boolean: 是否存在VPN连接
+  wd.isDarkMode()
+  // Boolean: 是否为深色模式，安卓10以下直接返回false
 
 // 网络
+  wd.isNetworkAvailable()
+  // (实验) Boolean: 网络是否连接
+  wd.regNetworkChangeEvent(String callback)
+  // void(async): 监听网络状态变化事件，网络已连接执行js: callback(true)，反之执行callback(false)
   wd.httpGet(String url, String callback, int symbo)
   /**
    * void(async): 向url发送GET请求，请求结束后执行JS:

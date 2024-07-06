@@ -36,10 +36,13 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
         mc=this;
 		Dedroid.requestPermission(mc,Manifest.permission.WRITE_EXTERNAL_STORAGE);
-		DedroidWeb.WebPage wp=new DedroidWeb.WebPage(this,"file:///android_asset/local_html/index.html");
+		String indexUrl=DedroidConfig.getString(this,"configs","index_url");
+		if(indexUrl.equals("")){
+			indexUrl="file:///android_asset/local_html/index.html";
+		}
+		DedroidWeb.WebPage wp=new DedroidWeb.WebPage(this,indexUrl);
 		wv=wp.getWebView();
 		JsBridge.setAttr(this,this,wv);
 		wv.addJavascriptInterface(new JsBridge(),"wds");
@@ -89,6 +92,11 @@ public class MainActivity extends Activity {
 			_activity.runOnUiThread(r);
 		}
 		@JavascriptInterface
+		public boolean putString(String key,String val){
+			DedroidConfig.putString(_context,"configs",key,val);
+			return true;
+		}
+		@JavascriptInterface
 		public void create(){
 			run(new Runnable(){
 					@Override
@@ -134,6 +142,14 @@ public class MainActivity extends Activity {
 			manifestRoot.put("manifest",manifest);
 			DedroidFile.write(projectPath+n+"/WebdroidManifest.json",manifestRoot.toString());
 			DedroidToast.toast(_activity,"保存成功");
+		}
+		@JavascriptInterface
+		public void code(String n,boolean isMD){
+			Intent i=new Intent();
+			i.setClass(_context,EditorActivity.class);
+			i.putExtra("project",n);
+			i.putExtra("isMD",isMD);
+			_activity.startActivity(i);
 		}
 		@JavascriptInterface
 		public void pack(final String n){

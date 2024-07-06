@@ -42,6 +42,8 @@
 
         <activity android:name=".ProjectViewerActivity"/>
 
+        <activity android:name=".EditorActivity"/>
+
     </application>
 
 </manifest>
