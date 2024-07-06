@@ -40,6 +40,8 @@
             android:name="android.max_aspect"
             android:value="4.0"/>
 
+        <activity android:name=".ProjectViewerActivity"/>
+
     </application>
 
 </manifest>

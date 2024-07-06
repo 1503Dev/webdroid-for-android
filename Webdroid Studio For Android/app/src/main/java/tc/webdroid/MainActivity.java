@@ -23,12 +23,15 @@ import android.os.Looper;
 import android.net.wifi.aware.*;
 import android.widget.*;
 import android.content.res.*;
+import android.webkit.*;
 
 public class MainActivity extends Activity {
 	
-	private Activity mc;
-	private View dialog_creator_view;
-	private AlertDialog dialog_creator;
+	private static Activity mc;
+	private static View dialog_creator_view;
+	private static AlertDialog dialog_creator;
+	private WebView wv;
+	private long exitTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,18 +39,129 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         mc=this;
 		Dedroid.requestPermission(mc,Manifest.permission.WRITE_EXTERNAL_STORAGE);
+		DedroidWeb.WebPage wp=new DedroidWeb.WebPage(this,"file:///android_asset/local_html/index.html");
+		wv=wp.getWebView();
+		JsBridge.setAttr(this,this,wv);
+		wv.addJavascriptInterface(new JsBridge(),"wds");
+		tc.webdroid.template.JsBridge.setAttr(this,this,wv);
+		wv.addJavascriptInterface(new tc.webdroid.template.JsBridge.webdroid(),"wd");
+		WebSettings settings = wv.getSettings();
+        settings.setUseWideViewPort(true);//设定支持viewport
+        settings.setLoadWithOverviewMode(true);   //自适应屏幕
+        settings.setBuiltInZoomControls(true);
+        settings.setDisplayZoomControls(false);
+        settings.setSupportZoom(true);//设定支持缩放
+        // 启用JavaScript
+        settings.setJavaScriptEnabled(true);
+        // 允许从文件加载
+        settings.setAllowFileAccessFromFileURLs(true);
+        settings.setAllowUniversalAccessFromFileURLs(true);
+        settings.setDomStorageEnabled(true);
     }
+	@Override
+    public void onBackPressed() {
+        if (wv.canGoBack()) {
+            wv.goBack();
+        } else {
+            if ((System.currentTimeMillis() - exitTime) > 2000) {
+                Toast.makeText(getApplicationContext(), "再按一次退出",
+                               Toast.LENGTH_SHORT).show();
+                exitTime = System.currentTimeMillis();
+            } else {
+                super.onBackPressed();
+            }
+
+        }
+    }
+	public static class JsBridge{
+		static private Context _context;
+		static private Activity _activity;
+		static private WebView _webview;
+		static private String projectPath=DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects/";
+
+		static public void setAttr(Context ctx, Activity act, WebView wv)
+		{
+			_context = ctx;
+			_activity = act;
+			_webview = wv;
+		}
+		public void run(Runnable r){
+			_activity.runOnUiThread(r);
+		}
+		@JavascriptInterface
+		public void create(){
+			run(new Runnable(){
+					@Override
+					public void run(){
+						AlertDialog.Builder dialog = DedroidDialog.emptyDialog(_context);
+						dialog_creator_view=_activity.getLayoutInflater().inflate(R.layout.dialog_create,null);
+						dialog.setView(dialog_creator_view);
+						dialog_creator=dialog.show();
+					}
+			});
+		}
+		@JavascriptInterface
+		public String listProject() throws JSONException{
+			DedroidFile.mkdir(DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects");
+			final String[] projects=DedroidFile.listName(DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects/").toArray(new String[0]);
+			if(projects.length==0){
+				//DedroidToast.toast(mc,"无项目，请查看"+_context.getString(R.string.s_explanation));
+				return "[]";
+			}
+			return new JSONArray(projects).toString();
+		}
+		@JavascriptInterface
+		public String getProjectDir(String n){
+			return projectPath+n+"/";
+		}
+		@JavascriptInterface
+		public String getProjectInfo(String n) throws JSONException, IOException{
+			JSONObject manifestRoot=new JSONObject(DedroidFile.read(projectPath+n+"/WebdroidManifest.json"));
+			JSONObject manifest=manifestRoot.getJSONObject("manifest");
+			JSONObject info=new JSONObject();
+			info.put("app_name",manifest.getString("application_name"));
+			info.put("version_name",manifest.getString("version_name"));
+			info.put("version_code",manifest.getInt("version_code"));
+			return info.toString();
+		}
+		@JavascriptInterface
+		public void save(String n,String an,String vn,int vc) throws JSONException, IOException{
+			JSONObject manifestRoot=new JSONObject(DedroidFile.read(projectPath+n+"/WebdroidManifest.json"));
+			JSONObject manifest=manifestRoot.getJSONObject("manifest");
+			manifest.put("application_name",an);
+			manifest.put("version_name",vn);
+			manifest.put("version_code",vc);
+			manifestRoot.put("manifest",manifest);
+			DedroidFile.write(projectPath+n+"/WebdroidManifest.json",manifestRoot.toString());
+			DedroidToast.toast(_activity,"保存成功");
+		}
+		@JavascriptInterface
+		public void pack(final String n){
+			MainActivity.pack(n);
+		}
+		@JavascriptInterface
+		public void run(String n){
+			Intent i=new Intent();
+			i.setClass(_context,ProjectViewerActivity.class);
+			i.putExtra("project",n);
+			_activity.startActivity(i);
+		}
+		@JavascriptInterface
+		public void template(){
+			run(new Runnable(){
+					@Override
+					public void run(){
+						
+					}
+				});
+		}
+	}
     public void about(View v){
-        DedroidDialog.HTMLAlert(this,getString(R.string.s_about),"Source Code<br><a href='https://github.com/1503Dev/webdroid-for-android/'>GITHUB</a><br>"+getString(R.string.s_open_source)+"<br><a href='https://github.com/TheChuan1503/DedroidUtil/'>DedroidUtil</a> <a href='https://github.com/AbdurazaaqMohammed/AXML-Editor/'>AXML-Editor</a>",true);
+        
     }
 	public void items(final View v){
-		DedroidFile.mkdir(DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects");
-		final String[] projects=DedroidFile.listName(DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects/").toArray(new String[0]);
-		if(projects.length==0){
-			DedroidToast.toast(mc,"无项目，请查看"+getString(R.string.s_explanation));
-			return;
-		}
-		DedroidDialog.list(mc,"选择要打包的项目", true, projects,-1, new DedroidDialog.SelectCallback(){
+		
+		/*DedroidDialog.list(mc,"选择要打包的项目", true, projects,-1, new DedroidDialog.SelectCallback(){
 
 				@Override
 				public void onSelect(DialogInterface dialog, int Which)
@@ -57,7 +171,7 @@ public class MainActivity extends Activity {
 				}
 				
 			
-		});
+		});*/
 	}
 	public void requestPermission(View v){
 		Dedroid.requestPermission(mc,Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -65,11 +179,9 @@ public class MainActivity extends Activity {
 	public void explanation(View v){
 		new DedroidWeb.JsBridge(this).jumpUrl("https://github.com/1503Dev/webdroid-for-android/");
 	}
-    public void create(View v){
-        AlertDialog.Builder dialog = DedroidDialog.emptyDialog(mc);
-		dialog_creator_view=getLayoutInflater().inflate(R.layout.dialog_create,null);
-		dialog.setView(dialog_creator_view);
-		dialog_creator=dialog.show();
+	
+    public static void create(View v){
+        
     }
     public void creator_create(View v) throws JSONException, IOException{
 		String rootPath=DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects";
@@ -111,15 +223,14 @@ public class MainActivity extends Activity {
 		dialog_creator.cancel();
 	}
     public void test(View v){
-        new DedroidWeb.WebPage(this,"file:///android_asset/local_html/index.html");
+        
     }
-	public void pack(final View v,final String projectName){
-		new Handler(Looper.getMainLooper()).postDelayed(new Runnable(){
+	public static void pack(final String projectName){
+		mc.runOnUiThread(new Runnable(){
 
                 @Override
                 public void run() {
 					
-                    v.setEnabled(false);
                     String rootPath=DedroidFile.EXTERN_STO_PATH+"/1503Dev/.WebdroidAppCoreTemp";
                     String projectPath=DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects/"+projectName;
                     DedroidFile.del(rootPath);
@@ -134,7 +245,6 @@ public class MainActivity extends Activity {
                     }
                     catch (IOException e)
                     {
-                        v.setEnabled(true);
                         DedroidToast.toast(mc,"内核加载失败\n"+e);
                         return;
                     }
@@ -158,31 +268,27 @@ public class MainActivity extends Activity {
                             DedroidFile.del(rootPath);
                             DedroidToast.toast(mc,"项目打包成功，请自行签名");
                             DedroidDialog.alert(mc,"成功","文件已保存在\n"+projectPath+"/build/app.apk\n请自行签名",true);
-                            v.setEnabled(true);
+                            
                         }
                         catch (IOException e)
                         {
-                            v.setEnabled(true);
                             DedroidToast.toast(mc,"项目打包出错，但打包未中断");
                         }
                         catch (XmlPullParserException e)
                         {
-                            v.setEnabled(true);
                             DedroidToast.toast(mc,"项目打包失败，AndroidManifest.xml编译错误");
                         }
                     }
                     catch (JSONException e)
                     {
-                        v.setEnabled(true);
                         DedroidToast.toast(mc,"项目读取失败，请检查WebdroidManifest.json");
                     }
                     catch (IOException e)
                     {
-                        v.setEnabled(true);
                         DedroidToast.toast(mc,"项目读取失败，请检查是否拥有权限");
                     }
                 }
-            }, 1000);
+            });
 		
 	}
 }

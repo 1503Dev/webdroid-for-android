@@ -1,17 +1,267 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head>
+
+<script>
+    const wv=wd.getAppName("com.google.android.webview")
+    const ver=parseInt(wd.getVersionName("com.google.android.webview").split(".")[0])
+    if(ver<86){
+        wd.alert("你的"+wv+"版本("+ver+")过低(<86)，请更新"+wv)
+        wd.toastLong("你的"+wv+"版本("+ver+")过低(<86)，请更新"+wv)
+        setTimeout(function(){
+            wd.finishAndRemoveTask()
+        },3000)
+    }
+</script>
+
+<head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"/>
-    <meta name="renderer" content="webkit"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" />
+    <meta name="renderer" content="webkit" />
     <link rel="stylesheet" href="mdui/mdui.min.css">
     <link rel="stylesheet" href="mdui/icon.css">
     <script src="mdui/mdui.min.js"></script>
-  </head>
-  <body>
-    <mdui-navigation-bar value="item-1" label-visibility="selected" class="nav">
-  <mdui-navigation-bar-item icon="edit_note" value="item-1">项目</mdui-navigation-bar-item>
-  <mdui-navigation-bar-item icon="settings" value="item-2">设置</mdui-navigation-bar-item>
-</mdui-navigation-bar>
-  </body>
+    <script>
+        mdui.setColorScheme('#FF009688');
+    </script>
+    <script src="jq.js"></script>
+    <style>
+        .nav:not(#nav-1) {
+            display: none;
+        }
+
+        .nav {
+            padding: 16px;
+            padding-top: 32px;
+        }
+        
+        mdui-fab{
+            position:fixed;
+            bottom:108px;
+        }
+        
+        [fab-add],
+        [fab-run]{
+            right:32px;
+        }
+        
+        [fab-reload],
+        [fab-pack]{
+            right:96px;
+        }
+        
+        [fab-save]{
+            right:160px;
+        }
+        
+        mdui-list-item *{
+            background:Transparent;
+        }
+        
+        .about_app_ic{
+            background:#3074DA;
+            width:72px;
+            height:72px;
+            border-radius:8px;
+        }
+        
+        .about_app_ic>mdui-icon{
+            color:white;
+            --s:48px;
+            font-size:var(--s);
+            margin-top:14px;
+        }
+        
+        *{
+            user-select:none;
+        }
+        
+        a{
+            color:black;
+            -webkit-tap-highlight-color: transparent;
+            tap-highlight-color: transparent;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="nav-1" class="nav mdui-prose">
+        <h1>项目</h1>
+        
+        <mdui-list id="project_list" style="display:none">
+            <mdui-list-item rounded onclick="edit('{{ pack_name }}')">{{ project_name }}<mdui-avatar slot="icon" src="{{ img }}"></mdui-avatar>
+            </mdui-list-item>
+        </mdui-list>
+        
+        <mdui-fab icon="add" fab-add onclick="wds.create()"></mdui-fab>
+        <mdui-fab icon="refresh" fab-reload onclick="loadProjects()"></mdui-fab>
+    </div>
+    <div id="nav-2" class="nav mdui-prose">
+        <h1>编辑</h1>
+        
+        <mdui-chip icon="warning_amber" style="width:100%;" show="no-editing-project" onclick='document.querySelector("mdui-navigation-bar-item[value=\"1\"]").click()'>请先选择一个项目</mdui-chip>
+        
+        <div id="editor" style="display:none;" show="has-editing-project">
+            <mdui-text-field variant="outlined" label="应用名" id="app_name" value="{{ app_name }}"></mdui-text-field>
+            <br><br>
+            <mdui-text-field variant="outlined" label="版本名" id="version_name" value="{{ version_name }}"></mdui-text-field>
+            <br><br>
+            <mdui-text-field variant="outlined" label="版本号" id="editor_version_code" type="number" value="{{ version_code }}"></mdui-text-field>
+            
+            <mdui-fab icon="play_arrow" fab-run onclick="run()"></mdui-fab>
+            <mdui-fab icon="archive" fab-pack onclick="pack()"></mdui-fab>
+            <mdui-fab icon="save" fab-save onclick="save()"></mdui-fab>
+        </div>
+    </div>
+    <div id="nav-3" class="nav mdui-prose">
+        <h1>设置</h1>
+        
+        <mdui-list>
+            <mdui-list-item rounded onclick="wd.requestPermission('android.permission.WRITE_EXTERNAL_STORAGE');wd.requestPermission('android.permission.MANAGE_EXTERNAL_STORAGE')" icon="perm_device_information">请求权限</mdui-list-item>
+            <mdui-list-item rounded onclick="dialog_about.open=true" icon="info">关于</mdui-list-item>
+        </mdui-list>
+    </div>
+
+    <mdui-navigation-bar value="1" label-visibility="selected">
+        <mdui-navigation-bar-item icon="list_alt" active-icon="list_alt--two-tone" value="1" href="javascript:switchNav(1)">项目</mdui-navigation-bar-item>
+        <mdui-navigation-bar-item icon="edit--outlined" active-icon="edit" value="2" href="javascript:switchNav(2)">编辑</mdui-navigation-bar-item>
+        <mdui-navigation-bar-item icon="settings--outlined" active-icon="settings--filled" value="3" href="javascript:switchNav(3)">设置</mdui-navigation-bar-item>
+    </mdui-navigation-bar>
+    
+    <mdui-dialog
+        id="dialog_about"
+        close-on-overlay-click
+        close-on-esc>
+        <center>
+            <div class="about_app_ic">
+                <mdui-icon name="code"></mdui-icon>
+            </div>
+            <b>&nbsp;</b><br>
+            <b style="font-size:125%">Webdroid Studio</b><br>
+            <b>for Android</b><br>
+            <pre style="text-align:left">    VERSION <script>document.write(wd.getVersionName())</script>
+      JSAPI <script>document.write(wd.getVersion())</script>
+SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webdroid-for-android/')">GITHUB</a>
+    LECENSE GPLv3
+        OSS <a href="javascript:Dedroid.jumpUrl('https://github.com/TheChuan1503/DedroidUtil/')">DedroidUtil</a>
+            <a href="javascript:Dedroid.jumpUrl('https://github.com/AbdurazaaqMohammed/AXML-Editor/')">AXML-Editor</a></pre>
+            
+        </center>
+    </mdui-dialog>
+    
+    <script>
+        if (!("wds" in window)) {
+            wds = {
+                projects:{
+                    project1:{
+                        app_name:"项目1",
+                        version_name:"1.0",
+                        version_code:1
+                    },
+                    project2:{
+                        app_name:"项目2",
+                        version_name:"1.2.3",
+                        version_code:1503
+                    }
+                },
+                create: function() {
+                    alert("Created")
+                },
+                listProject: function() {
+                    return '["project1","project2"]'
+                },
+                getProjectDir:function(n){
+                    return "http://localhost:8000/1503Dev/WebProjects/"+n+"/"
+                },
+                pack:function(n){
+                    alert("Packed")
+                },
+                getProjectInfo:function(n){
+                    return JSON.stringify(this.projects[n])
+                },
+                save:function(n,an,vn,vc){
+                    alert(`Saved ${n}\n${an}\n${vn}\n${vc}`)
+                },
+                run:function(n){
+                    alert("Runned "+n)
+                }
+            }
+        }
+        
+        function encode(s){
+            return encodeURIComponent(s)
+        }
+        
+        function decode(s){
+            return decodeURIComponent(s).replace(/\+/g," ")
+        }
+        
+        now_nav=1
+
+        function switchNav(id) {
+            if(id==now_nav) return
+            now_nav=id
+            let fadeTime = 100
+            document.querySelectorAll(".nav").forEach(function(e) {
+                $("#" + e.id).fadeOut(fadeTime)
+            })
+            setTimeout(function() {
+                $("#nav-" + id).fadeIn(fadeTime)
+            }, fadeTime)
+        }
+        
+        project_list_def=project_list.innerHTML
+        function loadProjects(){
+            project_list.innerHTML=""
+            let h=""
+            let projects=JSON.parse(wds.listProject())
+            projects.forEach(function(e){
+                h=h+project_list_def.replace("{{ project_name }}",e)
+                    .replace("{{ img }}",wds.getProjectDir(e)+"icon.png")
+                    .replace("{{ pack_name }}",encode(e))
+            })
+            project_list.innerHTML=h
+            project_list.style.display="block"
+            
+        }
+        editing_project=""
+        editor_def=editor.innerHTML
+        function _edit(n){
+            editor.innerHTML=""
+            let info=JSON.parse(wds.getProjectInfo(n))
+            editor.innerHTML=editor_def.replace("{{ app_name }}",info.app_name)
+                .replace("{{ version_name }}",info.version_name)
+                .replace("{{ version_code }}",info.version_code)
+        }
+        function edit(n){
+            n=decode(n)
+            editing_project=n
+            $('[show="no-editing-project"]').attr("style","display:none")
+            $('[show="has-editing-project"]').attr("style","display:block")
+            _edit(n)
+            document.querySelector("mdui-navigation-bar-item[value=\"2\"]").click()
+        }
+        function gv(e){
+            return document.querySelector("#"+e).getAttribute("value")
+        }
+        function save(){
+            wds.save(editing_project,app_name.value,version_name.value,parseInt(editor_version_code.value))
+        }
+        function pack(){
+            n=editing_project
+            mdui.confirm({
+                description:"是否打包"+n,
+                confirmText:"是",
+                closeOnOverlayClick:true,
+                onConfirm:function(){
+                    wds.pack(n)
+                }
+            })
+        }
+        function run(){
+            wds.run(editing_project)
+        }
+        loadProjects()
+    </script>
+</body>
+
 </html>
