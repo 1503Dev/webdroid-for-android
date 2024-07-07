@@ -11,6 +11,7 @@
             return null;
         }
     }
+    ver=getChromeVersion()
     if(ver<86){
         wd.alert("警告","代码编辑器暂未兼容WebView<86",false)
         setTimeout(function(){
@@ -47,7 +48,14 @@
         
         #editorView{
             width:100%;
-            height:calc(100vh - 64px);
+            height:calc(100vh - 64px - 16px);
+        }
+        
+        .bar_top{
+            height:16px;
+            box-sizing:border-box;
+            padding:2px;
+            font:12px monospace;
         }
     </style>
 </head>
@@ -80,7 +88,9 @@
             <mdui-button-icon icon="save" onclick="save();wd.toast('保存成功')"></mdui-button-icon>
             <mdui-button-icon icon="play_arrow" onclick="save();wds.runFile(project,file)"></mdui-button-icon>
         </mdui-top-app-bar>
-        
+        <div class="bar_top">
+            <div id="label_file"></div>
+        </div>
         <div id="editorView"></div>
     </div>
     
@@ -218,6 +228,7 @@
             }
             editor.session.setMode("ace/mode/"+getType(f));
             file=f
+            label_file.innerHTML=file.split('/')[file.split('/').length-1]
             let c=Dedroid.readFile(fp)
             editor.setValue(c)
             editor.getSession().getSelection().clearSelection()

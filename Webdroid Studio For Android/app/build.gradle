@@ -7,9 +7,9 @@ android {
     defaultConfig {
         applicationId "tc.webdroid"
         minSdkVersion 19
-        targetSdkVersion 26
-        versionCode 6
-        versionName "1.1.1-release"
+        targetSdkVersion 27
+        versionCode 7
+        versionName "1.1.2-release"
     }
 
     buildTypes {

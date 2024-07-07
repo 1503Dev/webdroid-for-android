@@ -326,7 +326,7 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
         function enable_my(){
             let ver=getChromeVersion()
             if(ver<86){
-                wd.toastLong('你的WebView版本("+ver+")<86，无法启用')
+                wd.toastLong("你的WebView版本("+ver+")<86，无法启用")
             } else {
                 wds.putString('index_url',"file:///android_asset/local_html/index.html")
                 wd.toast('请重启应用')

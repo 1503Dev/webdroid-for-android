@@ -237,7 +237,7 @@ public class MainActivity extends Activity {
 					
                     String rootPath=DedroidFile.EXTERN_STO_PATH+"/1503Dev/.WebdroidAppCoreTemp";
                     String projectPath=DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects/"+projectName;
-                    DedroidFile.del(rootPath);
+                    //DedroidFile.del(rootPath);
                     DedroidFile.mkdir(rootPath);
                     try
                     {
