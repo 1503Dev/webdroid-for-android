@@ -1,5 +1,5 @@
 # Webdroid Studio For Android
-![JSAPI version](https://img.shields.io/badge/JSAPI-4-blue)
+![JSAPI version](https://img.shields.io/badge/JSAPI-5-blue)
 
 简体中文
 
