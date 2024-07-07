@@ -2,9 +2,21 @@
 <html lang="zh-CN">
 
 <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const project = urlParams.get('project');
-    if(!project||project=="") window.location.replace("?project=666")
+    function getChromeVersion() {
+        var userAgent = navigator.userAgent;
+        var match = userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+        if (match !== null) {
+            return parseInt(match[2], 10);
+        } else {
+            return null;
+        }
+    }
+    if(ver<86){
+        wd.alert("警告","代码编辑器暂未兼容WebView<86",false)
+        setTimeout(function(){
+            wd.finishAndRemoveTask()
+        },3000)
+    }
 </script>
 
 <head>
@@ -21,7 +33,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
     <style>
         mdui-list-item *{
-            background:Transparent;
+            background:transparent;
         }
         
         *{
@@ -41,6 +53,11 @@
 </head>
 
 <body>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const project = urlParams.get('project');
+        if(!project||project=="") window.location.replace("?project=wds")
+    </script>
     <div id="inner">
         <mdui-top-app-bar style="position: relative;box-shadow: 0px 1px 5px rgba(0,0,0,0.1);">
             <mdui-button-icon icon="menu" onclick="dra_files.open = !dra_files.open"></mdui-button-icon>
@@ -50,32 +67,106 @@
                 </script>
             </mdui-top-app-bar-title>
             <div style="flex-grow: 1"></div>
+            <mdui-button-icon icon="exit_to_app" onclick="exit()"></mdui-button-icon>
+            <mdui-dropdown>
+                <mdui-button-icon icon="settings" slot="trigger"></mdui-button-icon>
+                <mdui-menu style="padding:6px 8px 6px 8px">
+                    <span>&nbsp;&nbsp;字体大小</span>
+                    <mdui-slider tickmarks id="text_size" min="2" max="20" style="width:160px"></mdui-slider>
+                </mdui-menu>
+            </mdui-dropdown>
             <mdui-button-icon icon="undo" onclick="undo()"></mdui-button-icon>
             <mdui-button-icon icon="redo" onclick="redo()"></mdui-button-icon>
             <mdui-button-icon icon="save" onclick="save();wd.toast('保存成功')"></mdui-button-icon>
-            <mdui-button-icon icon="play_arrow" onclick="save();wds.run(project)"></mdui-button-icon>
+            <mdui-button-icon icon="play_arrow" onclick="save();wds.runFile(project,file)"></mdui-button-icon>
         </mdui-top-app-bar>
         
         <div id="editorView"></div>
     </div>
     
     <mdui-navigation-drawer close-on-overlay-click id="dra_files" open="false">
-        <mdui-button full-width onclick="openFile()">打开文件</mdui-button>
+        <mdui-button full-width onclick="openFile()" style="margin:8px">打开文件</mdui-button>
+        <mdui-list style="margin:8px" id="file_list">
+            <mdui-list-item disable icon="{{ icon }}" rounded onclick="go('{{ file_ec }}')">{{ file }}</mdui-list-item>
+        </mdui-list>
     </mdui-navigation-drawer>
 
     
     <script>
+        if(!("wds" in window)){
+            wds={
+                getString:function(){
+                    return ''
+                },
+                putString:function(){
+                    return
+                }
+            }
+        }
+        var root=wd.getStoragePath()+"/1503Dev/WebProjects/"+project+"/"
+        var path="html/"
         var file="html/index.html"
-        var editor_theme="tomorrow"
+        var editor_theme="chrome"
         if(wd.isDarkMode()){
             document.body.setAttribute("class","mdui-theme-dark")
             editor_theme="tomorrow_night"
+        }
+        function listFile(dir){
+            let fp=root+dir
+            return JSON.parse(wd.listFile(fp))
         }
         function encode(s){
             return encodeURIComponent(s)
         }
         function decode(s){
             return decodeURIComponent(s)
+        }
+        function getFileIcon(f){
+            if(wd.isDir(f)) return 'folder'
+            let a=f.split('.')
+            switch(a[a.length-1].toLowerCase()){
+                case 'html':
+                case 'htm':
+                    return 'html'
+                case 'js':
+                    return 'javascript'
+                case 'css':
+                    return 'css'
+                case 'png':
+                case 'jpg':
+                case 'svg':
+                case 'gif':
+                    return 'image'
+                default:
+                    return 'insert_drive_file'
+            }
+        }
+        function fileDisabled(f){
+            if(wd.isDir(f)) return 'disabled'
+            return ''
+        }
+        file_list_def=file_list.innerHTML
+        function listf(){
+            file_list.innerHTML=""
+            let h=""
+            let files=listFile(path)
+            files.forEach(function(e){
+                h=h+file_list_def
+                    .replace('disable',fileDisabled(root+path+"/"+e))
+                    .replace('{{ file }}',e)
+                    .replace('{{ file_ec }}',encode(e))
+                    .replace('{{ icon }}',getFileIcon(root+path+"/"+e))
+            })
+            file_list.innerHTML=h
+        }
+        function initFiles(){
+            listf()
+        }
+        initFiles()
+        function go(f){
+            f=decode(f)
+            loadContent(path+f)
+            dra_files.open=false
         }
         function save(f=file){
             let fp=wd.getStoragePath()+"/1503Dev/WebProjects/"+project+"/"+f
@@ -103,6 +194,9 @@
             return f
         }
         function initEditor(){
+            let fs=wds.getString('editor_text_size')
+            if(fs=="") fs="14px"
+            text_size.value=fs.split('px')[0]
             editor = ace.edit("editorView");
             editor.setTheme("ace/theme/"+editor_theme);
             ace.require("ace/ext/language_tools");
@@ -110,10 +204,9 @@
             editor.setOptions({
                 enableBasicAutocompletion: true,
                 enableLiveAutocompletion: true,
-                fontSize: "14px",
+                fontSize: fs,
                 showPrintMargin: false,
-                enableSnippets: true,
-                a:true
+                enableSnippets: true
             });
         }
         initEditor()
@@ -148,10 +241,42 @@
                     this.open=false
                 },
                 onConfirm: function(v){
-                    window.loadContent(v)
                     dra_files.open=false
+                    window.loadContent(v)
                 }
             });
+        }
+        function exit(){
+            mdui.confirm({
+                description: "是否保存",
+                closeOnOverlayClick:true,
+                confirmText: "保存并退出",
+                cancelText: "退出",
+                onCancel:function(){
+                    wd.finish()
+                },
+                onConfirm: function(v){
+                    save()
+                    wd.finish()
+                }
+            })
+        }
+        text_size.addEventListener("change", function(){
+            wds.putString("editor_text_size",text_size.value+"px")
+            editor.setOptions({
+                fontSize: text_size.value+"px"
+            });
+        });
+        wd.regDarkModeChangeEvent('onDarkChange')
+        onDarkChange=function(s){
+            if(s){
+                document.body.setAttribute("class","mdui-theme-dark")
+                editor_theme="tomorrow_night"
+            } else {
+                document.body.setAttribute("class","")
+                editor_theme="chrome"
+            }
+            editor.setTheme("ace/theme/"+editor_theme);
         }
     </script>
 </body>

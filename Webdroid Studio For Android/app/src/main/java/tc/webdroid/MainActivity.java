@@ -24,6 +24,7 @@ import android.net.wifi.aware.*;
 import android.widget.*;
 import android.content.res.*;
 import android.webkit.*;
+import android.os.*;
 
 public class MainActivity extends Activity {
 	
@@ -76,6 +77,11 @@ public class MainActivity extends Activity {
 
         }
     }
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		return;
+	}
 	public static class JsBridge{
 		static private Context _context;
 		static private Activity _activity;
@@ -95,6 +101,10 @@ public class MainActivity extends Activity {
 		public boolean putString(String key,String val){
 			DedroidConfig.putString(_context,"configs",key,val);
 			return true;
+		}
+		@JavascriptInterface
+		public String getString(String key){
+			return DedroidConfig.getString(_context,"configs",key);
 		}
 		@JavascriptInterface
 		public void create(){
@@ -163,6 +173,14 @@ public class MainActivity extends Activity {
 			_activity.startActivity(i);
 		}
 		@JavascriptInterface
+		public void runFile(String n,String f){
+			Intent i=new Intent();
+			i.setClass(_context,ProjectViewerActivity.class);
+			i.putExtra("project",n);
+			i.putExtra("file",f);
+			_activity.startActivity(i);
+		}
+		@JavascriptInterface
 		public void template(){
 			run(new Runnable(){
 					@Override
@@ -172,33 +190,6 @@ public class MainActivity extends Activity {
 				});
 		}
 	}
-    public void about(View v){
-        
-    }
-	public void items(final View v){
-		
-		/*DedroidDialog.list(mc,"选择要打包的项目", true, projects,-1, new DedroidDialog.SelectCallback(){
-
-				@Override
-				public void onSelect(DialogInterface dialog, int Which)
-				{
-                    DedroidToast.toast(mc,"正在打包项目");
-					pack(v,projects[Which]);
-				}
-				
-			
-		});*/
-	}
-	public void requestPermission(View v){
-		Dedroid.requestPermission(mc,Manifest.permission.WRITE_EXTERNAL_STORAGE);
-	}
-	public void explanation(View v){
-		new DedroidWeb.JsBridge(this).jumpUrl("https://github.com/1503Dev/webdroid-for-android/");
-	}
-	
-    public static void create(View v){
-        
-    }
     public void creator_create(View v) throws JSONException, IOException{
 		String rootPath=DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects";
 		String project_name=((TextView)dialog_creator_view.findViewById(R.id.creator_project_name)).getText().toString();
@@ -238,9 +229,6 @@ public class MainActivity extends Activity {
 		DedroidDialog.alert(mc,"创建成功","项目已在\n"+projectPath+"\n创建",true);
 		dialog_creator.cancel();
 	}
-    public void test(View v){
-        
-    }
 	public static void pack(final String projectName){
 		mc.runOnUiThread(new Runnable(){
 

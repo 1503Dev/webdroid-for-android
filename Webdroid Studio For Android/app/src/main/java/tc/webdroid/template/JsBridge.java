@@ -22,7 +22,8 @@ public class JsBridge
 	static private Context _context;
 	static private Activity _activity;
 	static private WebView _webview;
-	static private int webdroidApiVersion=4;
+	static private int webdroidApiVersion=5;
+	static public String darkChangeCalklback="void";
 	static public List<String> blockedUrls=new ArrayList<>();
 	
 	static public void setAttr(Context ctx, Activity act, WebView wv)
@@ -33,6 +34,9 @@ public class JsBridge
 	}
 	static public class webdroid
 	{
+		public void run(Runnable r){
+			_activity.runOnUiThread(r);
+		}
 		@JavascriptInterface
 		public int getVersion()
 		{
@@ -40,24 +44,48 @@ public class JsBridge
 		}
 		// 基本
 		@JavascriptInterface
-		public void alert(String title, String content, boolean cancelable)
+		public void alert(final String title, final String content, final boolean cancelable)
 		{
-			DedroidDialog.alert(_activity, title, content, cancelable);
+			run(new Runnable(){
+					@Override
+					public void run()
+					{
+						DedroidDialog.alert(_activity, title, content, cancelable);
+					}
+			});
 		}
 		@JavascriptInterface
-		public void alert(String title, String content)
+		public void alert(final String title, final String content)
 		{
-			DedroidDialog.alert(_activity, title, content, true);
+			run(new Runnable(){
+					@Override
+					public void run()
+					{
+			            DedroidDialog.alert(_activity, title, content, true);
+					}
+			});
 		}
 		@JavascriptInterface
-		public void alert(String content, boolean cancelable)
+		public void alert(final String content, final boolean cancelable)
 		{
-			DedroidDialog.alert(_activity, content, cancelable);
+			run(new Runnable(){
+					@Override
+					public void run()
+					{
+			            DedroidDialog.alert(_activity, content, cancelable);
+			        }
+			});
 		}
 		@JavascriptInterface
-		public void alert(String content)
+		public void alert(final String content)
 		{
-			DedroidDialog.alert(_activity, content, true);
+			run(new Runnable(){
+					@Override
+					public void run()
+					{
+			            DedroidDialog.alert(_activity, content, true);
+					}
+			});
 		}
 		@JavascriptInterface
 		public void toast(String text)
@@ -79,7 +107,7 @@ public class JsBridge
 		}
 		//设置
 		@JavascriptInterface
-		public Boolean setIndexUrl(String url){
+		public boolean setIndexUrl(String url){
 			return DedroidConfig.putString(_context,"settings","index_url",url);
 		}
 		@JavascriptInterface
@@ -120,6 +148,10 @@ public class JsBridge
 			} else {
 				return false;
 			}
+		}
+		@JavascriptInterface
+		public boolean isDir(String path){
+			return new File(path).isDirectory();
 		}
 		// 软件包
 		@JavascriptInterface
@@ -184,8 +216,61 @@ public class JsBridge
 			DedroidConfig.putString(_context,"webdroid_localstorage",key,value);
 		}
 		@JavascriptInterface
+		public void putInt(String key,int value){
+			SharedPreferences sp=_context.getSharedPreferences("webdroid_localstorage",Context.MODE_PRIVATE);
+		    SharedPreferences.Editor e=sp.edit();
+			e.putInt(key,value);
+			e.apply();
+		}
+		@JavascriptInterface
+		public void putFloat(String key,Float value){
+			SharedPreferences sp=_context.getSharedPreferences("webdroid_localstorage",Context.MODE_PRIVATE);
+		    SharedPreferences.Editor e=sp.edit();
+			e.putFloat(key,value);
+			e.apply();
+		}
+		@JavascriptInterface
+		public void putBoolean(String key,Boolean value){
+			SharedPreferences sp=_context.getSharedPreferences("webdroid_localstorage",Context.MODE_PRIVATE);
+		    SharedPreferences.Editor e=sp.edit();
+			e.putBoolean(key,value);
+			e.apply();
+		}
+		@JavascriptInterface
+		public void putLong(String key,Long value){
+			SharedPreferences sp=_context.getSharedPreferences("webdroid_localstorage",Context.MODE_PRIVATE);
+		    SharedPreferences.Editor e=sp.edit();
+			e.putLong(key,value);
+			e.apply();
+		}
+		@JavascriptInterface
 		public String getString(String key){
 			return DedroidConfig.getString(_context,"webdroid_localstorage",key);
+		}
+		@JavascriptInterface
+		public int getInt(String key){
+			SharedPreferences sp=_context.getSharedPreferences("webdroid_localstorage",Context.MODE_PRIVATE);
+		    return sp.getInt(key,0);
+		}
+		@JavascriptInterface
+		public float getFloat(String key){
+			SharedPreferences sp=_context.getSharedPreferences("webdroid_localstorage",Context.MODE_PRIVATE);
+		    return sp.getFloat(key,0);
+		}
+		@JavascriptInterface
+		public boolean getBoolean(String key){
+			SharedPreferences sp=_context.getSharedPreferences("webdroid_localstorage",Context.MODE_PRIVATE);
+		    return sp.getBoolean(key,false);
+		}
+		@JavascriptInterface
+		public long getLong(String key){
+			SharedPreferences sp=_context.getSharedPreferences("webdroid_localstorage",Context.MODE_PRIVATE);
+		    return sp.getLong(key,0);
+		}
+		@JavascriptInterface
+		public boolean isSpExists(String key){
+			SharedPreferences sp=_context.getSharedPreferences("webdroid_localstorage",Context.MODE_PRIVATE);
+		    return sp.contains(key);
 		}
 		// 系统
 		@JavascriptInterface
@@ -267,9 +352,13 @@ public class JsBridge
 			}	
 			return false;
 		}
+		@JavascriptInterface
+		public void regDarkModeChangeEvent(String callback){
+			darkChangeCalklback=callback;
+		}
 		// 网络
 		@JavascriptInterface
-		public Boolean isNetworkAvailable(){
+		public boolean isNetworkAvailable(){
 			return DedroidNetwork.isNetworkAvailable(_context);
 		}
 		@JavascriptInterface

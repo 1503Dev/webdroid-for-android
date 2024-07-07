@@ -8,6 +8,8 @@ import tc.webdroid.template.*;
 import android.webkit.*;
 import android.widget.*;
 import android.content.*;
+import android.content.res.*;
+import android.os.*;
 
 public class ProjectViewerActivity extends Activity {
     
@@ -24,11 +26,18 @@ public class ProjectViewerActivity extends Activity {
         }
 		Intent i=getIntent();
 		String project=i.getExtras().getString("project");
-        DedroidWeb.WebPage wp=new DedroidWeb.WebPage(this,DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects/"+project+"/html/index.html");
+		String file="html/index.html";
+		if(i.hasExtra("file")){
+			file=i.getStringExtra("file");
+		}
+        DedroidWeb.WebPage wp=new DedroidWeb.WebPage(this,DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects/"+project+"/"+file);
 		wv=wp.getWebView();
 		JsBridge.setAttr(this,this,wv);
 		wv.addJavascriptInterface(new JsBridge.webdroid(),"webdroid");
 		wv.addJavascriptInterface(new JsBridge.webdroid(),"wd");
+		tc.webdroid.MainActivity.JsBridge wds=new tc.webdroid.MainActivity.JsBridge();
+		wds.setAttr(this,this,wv);
+		wv.addJavascriptInterface(wds,"wds");
 		WebSettings settings = wv.getSettings();
         settings.setUseWideViewPort(true);//设定支持viewport
         settings.setLoadWithOverviewMode(true);   //自适应屏幕
@@ -57,4 +66,20 @@ public class ProjectViewerActivity extends Activity {
 
         }
     }
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		if(Build.VERSION.SDK_INT<29) return;
+		int currentNightMode = newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+		switch (currentNightMode) {
+			case Configuration.UI_MODE_NIGHT_YES:
+				wv.evaluateJavascript("javascript:"+JsBridge.darkChangeCalklback+"(true)",null);
+				break;
+			case Configuration.UI_MODE_NIGHT_NO:
+				wv.evaluateJavascript("javascript:"+JsBridge.darkChangeCalklback+"(false)",null);
+				break;
+			case Configuration.UI_MODE_NIGHT_UNDEFINED:
+				break;
+		}
+	}
 }

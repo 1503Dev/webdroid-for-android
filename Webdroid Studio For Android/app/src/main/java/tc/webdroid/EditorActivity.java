@@ -11,6 +11,8 @@ import android.*;
 import android.widget.*;
 import java.net.*;
 import android.content.*;
+import android.content.res.*;
+import android.os.*;
 
 public class EditorActivity extends Activity {
     
@@ -69,5 +71,20 @@ public class EditorActivity extends Activity {
 
         }
     }
-    
+    @Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		if(Build.VERSION.SDK_INT<29) return;
+		int currentNightMode = newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+		switch (currentNightMode) {
+			case Configuration.UI_MODE_NIGHT_YES:
+				wv.evaluateJavascript("javascript:"+JsBridge.darkChangeCalklback+"(true)",null);
+				break;
+			case Configuration.UI_MODE_NIGHT_NO:
+				wv.evaluateJavascript("javascript:"+JsBridge.darkChangeCalklback+"(false)",null);
+				break;
+			case Configuration.UI_MODE_NIGHT_UNDEFINED:
+				break;
+		}
+	}
 }

@@ -2,6 +2,7 @@
 <html lang="zh-CN">
 
 <script>
+    //window.location.replace('editor.html?project=wds')
     function getChromeVersion() {
         var userAgent = navigator.userAgent;
         var match = userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
@@ -138,6 +139,7 @@
         
         <mdui-list>
             <mdui-list-item rounded onclick="wd.requestPermission('android.permission.WRITE_EXTERNAL_STORAGE');wd.requestPermission('android.permission.MANAGE_EXTERNAL_STORAGE')" icon="perm_device_information">请求权限</mdui-list-item>
+            <mdui-list-item rounded onclick="enable_md()" icon="view_carousel">启用兼容性UI(Material Design)</mdui-list-item>
             <mdui-list-item rounded onclick="dialog_about.open=true" icon="info">关于</mdui-list-item>
             <mdui-list-item rounded onclick="dev_options()" icon="logo_dev">开发人员选项</mdui-list-item>
         </mdui-list>
@@ -277,6 +279,10 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
                     });
                 }
             })
+        }
+        function enable_md(){
+            wds.putString('index_url',"file:///android_asset/local_html/index-md.html")
+            wd.toast('请重启应用')
         }
         setInterval(function(){
             if(projects!=JSON.parse(wds.listProject())){

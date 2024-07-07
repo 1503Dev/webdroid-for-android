@@ -40,9 +40,13 @@
             android:name="android.max_aspect"
             android:value="4.0"/>
 
-        <activity android:name=".ProjectViewerActivity"/>
+        <activity
+            android:name=".ProjectViewerActivity"
+            android:configChanges="uiMode"/>
 
-        <activity android:name=".EditorActivity"/>
+        <activity
+            android:name=".EditorActivity"
+            android:configChanges="uiMode"/>
 
     </application>
 
