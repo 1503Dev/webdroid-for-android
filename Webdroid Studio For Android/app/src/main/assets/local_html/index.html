@@ -20,7 +20,8 @@
     if(ver==""||!ver) ver=0
     if(ver<86){
         wd.alert("警告","你的"+wv+"版本("+ver+")过低(<86)，请更新"+wv,false)
-        wd.toastLong("你的"+wv+"版本("+ver+")过低(<86)，请更新"+wv)
+        wds.putString('index_url','file:///android_asset/local_html/index-md.html')
+        wd.toastLong('重启以启用兼容性UI')
         setTimeout(function(){
             wd.finishAndRemoveTask()
         },3000)

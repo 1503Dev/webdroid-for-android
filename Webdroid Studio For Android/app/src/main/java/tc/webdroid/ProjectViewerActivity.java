@@ -37,7 +37,7 @@ public class ProjectViewerActivity extends Activity {
 		wv.addJavascriptInterface(new JsBridge.webdroid(),"wd");
 		tc.webdroid.MainActivity.JsBridge wds=new tc.webdroid.MainActivity.JsBridge();
 		wds.setAttr(this,this,wv);
-		wv.addJavascriptInterface(wds,"wds");
+		//wv.addJavascriptInterface(wds,"wds");
 		WebSettings settings = wv.getSettings();
         settings.setUseWideViewPort(true);//设定支持viewport
         settings.setLoadWithOverviewMode(true);   //自适应屏幕

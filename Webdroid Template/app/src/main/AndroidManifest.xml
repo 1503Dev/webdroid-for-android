@@ -39,6 +39,7 @@
         <activity
             android:name="tc.webdroid.template.MainActivity"
             android:label="LauncherName"
+		    android:configChanges="uiMode"
             android:exported="true">
 
             <intent-filter>

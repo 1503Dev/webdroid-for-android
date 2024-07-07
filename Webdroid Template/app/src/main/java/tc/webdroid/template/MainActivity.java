@@ -7,6 +7,7 @@ import tc.dedroid.util.DedroidWeb;
 import android.webkit.*;
 import android.widget.*;
 import tc.dedroid.util.*;
+import android.content.res.*;
 
 public class MainActivity extends Activity {
      
@@ -57,4 +58,20 @@ public class MainActivity extends Activity {
 
         }
     }
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		if(Utils.getSdk()<29) return;
+		int currentNightMode = newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+		switch (currentNightMode) {
+			case Configuration.UI_MODE_NIGHT_YES:
+				wv.evaluateJavascript("javascript:"+JsBridge.darkChangeCalklback+"(true)",null);
+				break;
+			case Configuration.UI_MODE_NIGHT_NO:
+				wv.evaluateJavascript("javascript:"+JsBridge.darkChangeCalklback+"(false)",null);
+				break;
+			case Configuration.UI_MODE_NIGHT_UNDEFINED:
+				break;
+		}
+	}
 }

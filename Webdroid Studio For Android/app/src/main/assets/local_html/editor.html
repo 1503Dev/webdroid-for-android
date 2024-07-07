@@ -212,7 +212,7 @@
         initEditor()
         function loadContent(f=file){
             let fp=wd.getStoragePath()+"/1503Dev/WebProjects/"+project+"/"+f
-            if((!wd.isFileExists(fp))||f=="/"||f==""){
+            if((!wd.isFileExists(fp))||f=="/"||f==""||wd.isDir(fp)){
                 wd.toast(fp+"不存在")
                 return
             }

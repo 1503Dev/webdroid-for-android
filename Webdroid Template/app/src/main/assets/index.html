@@ -26,6 +26,7 @@
     <button onclick="ts(wd.getStoragePath())">getStoragePath</button>
     <button onclick="ts(wd.isFileExists(wd.getStoragePath()+'/1503Dev'))">isFileExists</button>
     <button onclick="ts(wd.listFile(wd.getStoragePath()+'/1503Dev/WebProjects'))">listFile</button>
+    <button onclick="ts(wd.isDir(wd.getStoragePath()+'/1503Dev/WebProjects'))">isDir</button>
     <h3>软件包</h3>
     <button onclick="ts(wd.getPackageName())">getPackageName</button>
     <button onclick="ts(wd.getAppName())">getAppName</button>
@@ -37,6 +38,11 @@
     <button onclick="ts(wd.putString('test','测试数据'))">putString</button>
     <button onclick="ts(wd.putString('test','测试数据2'))">putString</button>
     <button onclick="ts(wd.getString('test'))">getString</button>
+    <button onclick="ts(wd.getInt('test2'))">put(get)Int</button>
+    <button onclick="ts(wd.getFloat('test2'))">put(get)Float</button>
+    <button onclick="ts(wd.getLong('test2'))">put(get)Long</button>
+    <button onclick="ts(wd.getBoolean('test2'))">put(get)Boolean</button>
+    <button onclick="ts(wd.isSpExists('test'))">isSpExists</button>
     <h3>系统</h3>
     <button onclick="wd.finish()">finish</button>
     <button onclick="wd.finishAndRemoveTask()">finishAndRemoveTask</button>
@@ -47,9 +53,10 @@
     <button onclick="ts(wd.hasPermission('android.permission.WRITE_EXTERNAL_STORAGE'),'是否拥有储存权限')">hasPermission</button>
     <button onclick="ts(wd.isVpnConnected())">isVpnConnected (实验)</button>
     <button onclick="ts(wd.isDarkMode(),'是否为夜间模式')">isDarkMode</button>
+    <button onclick="ts(wd.regDarkModeChangeEvent('ts'),'试试开关夜间模式')">regDarkModeChangeEvent</button>
     <h3>网络</h3>
     <button onclick="ts(wd.isNetworkAvailable())">isNetworkAvailable</button>
-    <button onclick="this.setAttribute('disabled',true);ts(wd.regNetworkChangeEvent('ts'),'试试开关网络')">regNetworkChangeEvent</button>
+    <button onclick="this.setAttribute('disabled',true);ts(wd.regNetworkChangeEvent('ts'),'试试开关网络')">regNetworkChangeEvent (实验)</button>
     <button onclick="wd.httpGet('https://pages.1503dev.top/test/','onHttpCallback',0)">httpGet</button>
     <h3>更多</h3>
     <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webdroid-for-android/')">文档 | DOCS</a>
