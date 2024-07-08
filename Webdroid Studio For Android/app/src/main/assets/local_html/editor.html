@@ -13,10 +13,9 @@
     }
     ver=getChromeVersion()
     if(ver<86){
-        wd.alert("警告","代码编辑器暂未兼容WebView<86",false)
-        setTimeout(function(){
-            wd.finishAndRemoveTask()
-        },3000)
+        wds.setMyEnable(false)
+        wd.toast('请重启编辑器')
+        wd.finishAndRemoveTask()
     }
 </script>
 
