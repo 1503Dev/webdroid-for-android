@@ -1,35 +1,12 @@
 <!doctype html>
 <html lang="zh-CN">
 
-<script>
-    function getChromeVersion() {
-        var userAgent = navigator.userAgent;
-        var match = userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
-        if (match !== null) {
-            return parseInt(match[2], 10);
-        } else {
-            return null;
-        }
-    }
-    ver=getChromeVersion()
-    if(ver<86){
-        wd.alert("警告","代码编辑器暂未兼容WebView<86",false)
-        setTimeout(function(){
-            wd.finishAndRemoveTask()
-        },3000)
-    }
-</script>
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" />
     <meta name="renderer" content="webkit" />
-    <link rel="stylesheet" href="mdui/mdui.min.css">
-    <link rel="stylesheet" href="mdui/icon.css">
-    <script src="mdui/mdui.min.js"></script>
-    <script>
-        mdui.setColorScheme('#FF009688');
-    </script>
+    <link rel="stylesheet" href="mdui-1/css/mdui.min.css">
+    <script src="mdui-1/js/mdui.min.js"></script>
     <script src="jq.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
@@ -49,7 +26,7 @@
         
         #editorView{
             width:100%;
-            height:calc(100vh - 64px - 16px);
+            height:calc(100vh - 56px - 16px);
         }
         
         .bar_top{
@@ -61,47 +38,68 @@
     </style>
 </head>
 
-<body>
+<body class="mdui-theme-accent-orange mdui-theme-primary-teal mdui-appbar-with-toolbar">
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const project = urlParams.get('project');
         if(!project||project=="") window.location.replace("?project=wds")
     </script>
     <div id="inner">
-        <mdui-top-app-bar style="position: relative;box-shadow: 0px 1px 5px rgba(0,0,0,0.1);">
-            <mdui-button-icon icon="menu" onclick="dra_files.open = !dra_files.open"></mdui-button-icon>
-            <mdui-top-app-bar-title>
-                <script>
-                    document.write(project)
-                </script>
-            </mdui-top-app-bar-title>
-            <div style="flex-grow: 1"></div>
-            <mdui-button-icon icon="exit_to_app" onclick="exit()"></mdui-button-icon>
-            <mdui-dropdown>
-                <mdui-button-icon icon="settings" slot="trigger"></mdui-button-icon>
-                <mdui-menu style="padding:6px 8px 6px 8px">
-                    <span>&nbsp;&nbsp;字体大小</span>
-                    <mdui-slider tickmarks id="text_size" min="2" max="20" style="width:160px"></mdui-slider>
-                </mdui-menu>
-            </mdui-dropdown>
-            <mdui-button-icon icon="undo" onclick="undo()"></mdui-button-icon>
-            <mdui-button-icon icon="redo" onclick="redo()"></mdui-button-icon>
-            <mdui-button-icon icon="save" onclick="save();wd.toast('保存成功')"></mdui-button-icon>
-            <mdui-button-icon icon="play_arrow" onclick="save();wds.runFile(project,file)"></mdui-button-icon>
-        </mdui-top-app-bar>
+        <div class="mdui-appbar mdui-appbar-fixed">
+            <div class="mdui-toolbar mdui-color-theme">
+                <a class="mdui-btn mdui-btn-icon" mdui-drawer="{target: '#dra_files'}">
+                    <i class="mdui-icon material-icons">menu</i>
+                </a>
+                <a class="mdui-typo-title">
+                    <script>
+                        document.write(project)
+                    </script>
+                </a>
+                <div class="mdui-toolbar-spacer"></div>
+                <a class="mdui-btn mdui-btn-icon" onclick="exit()">
+                    <i class="mdui-icon material-icons">exit_to_app</i>
+                </a>
+                <a class="mdui-btn mdui-btn-icon" mdui-dialog="{target: '#settingsDialog'}">
+                    <i class="mdui-icon material-icons">settings</i>
+                </a>
+                <a class="mdui-btn mdui-btn-icon" onclick="undo()">
+                    <i class="mdui-icon material-icons">undo</i>
+                </a>
+                <a class="mdui-btn mdui-btn-icon" onclick="redo()">
+                    <i class="mdui-icon material-icons">redo</i>
+                </a>
+                <a class="mdui-btn mdui-btn-icon" onclick="save();wd.toast('保存成功')">
+                    <i class="mdui-icon material-icons">save</i>
+                </a>
+                <a class="mdui-btn mdui-btn-icon" onclick="save();wds.runFile(project,file)">
+                    <i class="mdui-icon material-icons">play_arrow</i>
+                </a>
+            </div>
+        </div>
         <div class="bar_top">
             <div id="label_file"></div>
         </div>
         <div id="editorView"></div>
     </div>
     
-    <mdui-navigation-drawer close-on-overlay-click id="dra_files" open="false">
-        <mdui-button full-width onclick="openFile()" style="margin:8px">打开文件</mdui-button>
-        <mdui-list style="margin:8px" id="file_list">
-            <mdui-list-item disable icon="{{ icon }}" rounded onclick="go('{{ file_ec }}')">{{ file }}</mdui-list-item>
-        </mdui-list>
-    </mdui-navigation-drawer>
-
+    <div id="settingsDialog" class="mdui-dialog">
+        <div style="margin:16px">
+            <span>字体大小</span>
+            <label class="mdui-slider mdui-slider-discrete">
+                <input id="text_size" type="range" value="14" step="1" min="2" max="20"/>
+            </label>
+        </div>
+    </div>
+    
+    <div class="mdui-drawer" id="dra_files">
+        <button onclick="openFile()" class="mdui-btn mdui-btn-dense mdui-color-theme-accent mdui-ripple" style="margin:8px;width:calc(100% - 16px)">打开文件</button>
+        <ul class="mdui-list" id="file_list">
+            <li class="mdui-list-item mdui-ripple" disable onclick="go('{{ file_ec }}')">
+                <i class="mdui-list-item-icon mdui-icon material-icons">{{ icon }}</i>
+                <div class="mdui-list-item-content">{{ file }}</div>
+            </li>
+        </ul>
+    </div>
     
     <script>
         if(!("wds" in window)){
@@ -138,11 +136,10 @@
             switch(a[a.length-1].toLowerCase()){
                 case 'html':
                 case 'htm':
-                    return 'html'
                 case 'js':
-                    return 'javascript'
+                    return 'code'
                 case 'css':
-                    return 'css'
+                    return 'style'
                 case 'png':
                 case 'jpg':
                 case 'svg':
@@ -237,41 +234,30 @@
         }
         loadContent(file)
         function openFile(){
-            mdui.prompt({
-                description: "打开文件",
-                closeOnOverlayClick:true,
-                confirmText: "打开",
-                onOpen:function(d){
-                    d.childNodes.forEach(function(e){
-                        if(e.tagName.toLowerCase()=="mdui-text-field"){
-                            e.value=file
-                        }
-                    })
-                },
-                cancelText: "",
-                onCancel:function(){
-                    this.open=false
-                },
-                onConfirm: function(v){
-                    dra_files.open=false
+            mdui.prompt("打开文件",
+                function(v){
                     window.loadContent(v)
+                },
+                function(){},
+                {
+                    defaultValue:file
                 }
-            });
+            );
         }
         function exit(){
-            mdui.confirm({
-                description: "是否保存",
-                closeOnOverlayClick:true,
-                confirmText: "保存并退出",
-                cancelText: "退出",
-                onCancel:function(){
-                    wd.finish()
-                },
-                onConfirm: function(v){
+            mdui.confirm("是否保存",
+                function(){
                     save()
                     wd.finish()
-                }
-            })
+                },
+                function(){
+                    wd.finish()
+                },
+                {
+                    confirmText:'保存并退出',
+                    cancelText:'退出',
+                    closeOnEsc:true
+                })
         }
         text_size.addEventListener("change", function(){
             wds.putString("editor_text_size",text_size.value+"px")

@@ -32,9 +32,10 @@ public class ProjectViewerActivity extends Activity {
 		}
         DedroidWeb.WebPage wp=new DedroidWeb.WebPage(this,DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects/"+project+"/"+file);
 		wv=wp.getWebView();
-		JsBridge.setAttr(this,this,wv);
-		wv.addJavascriptInterface(new JsBridge.webdroid(),"webdroid");
-		wv.addJavascriptInterface(new JsBridge.webdroid(),"wd");
+		JsBridge jsb=new JsBridge();
+		jsb.setAttr(this,this,wv);
+		wv.addJavascriptInterface(jsb,"webdroid");
+		wv.addJavascriptInterface(jsb,"wd");
 		//tc.webdroid.MainActivity.JsBridge wds=new tc.webdroid.MainActivity.JsBridge();
 		//wds.setAttr(this,this,wv);
 		//wv.addJavascriptInterface(wds,"wds");

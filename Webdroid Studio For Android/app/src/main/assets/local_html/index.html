@@ -75,6 +75,12 @@
             right:224px;
         }
         
+        [fab-delete]{
+            right:288px;
+            background:rgb(224,0,0);
+            color:white;
+        }
+        
         mdui-list-item *{
             background:Transparent;
         }
@@ -133,6 +139,7 @@
             <mdui-fab icon="archive" fab-pack onclick="pack()"></mdui-fab>
             <mdui-fab icon="save" fab-save onclick="save()"></mdui-fab>
             <mdui-fab icon="code" fab-code onclick="wds.code(editing_project,false)"></mdui-fab>
+            <mdui-fab icon="delete" fab-delete onclick="del(editing_project)"></mdui-fab>
         </div>
     </div>
     <div id="nav-3" class="nav mdui-prose">
@@ -180,12 +187,38 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
         if (!("wds" in window)) {
             wds = {
                 listProject: function() {
-                    return '[]'
+                    return '["wds"]'
                 },
                 getProjectDir:function(n){
                     return "http://localhost:8000/1503Dev/WebProjects/"+n+"/"
                 },
             }
+        }
+        
+        function getUpdate(r,c){
+            if(r!==void 0){
+                if(r===false){
+                    return
+                }
+                r=decode(r).replace(/\+/g,' ')
+                let data=JSON.parse(r)
+                if (wd.getVersionCode()<data.version_code){
+                    mdui.confirm({
+                        headline:'有新版本',
+                        description:data.version_name,
+                        closeOnOverlayClick:true,
+                        confirmText:'更新',
+                        onConfirm:function(){
+                            Dedroid.jumpUrl(data.update_url)
+                        }
+                    })
+                }
+                return
+            }
+            wd.httpGet(
+                'https://verc.1503dev.top/api/lasted/?app=Webdroid_Studio_Android',
+                'getUpdate',
+                0)
         }
         
         function encode(s){
@@ -195,6 +228,8 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
         function decode(s){
             return decodeURIComponent(s)
         }
+        
+        getUpdate()
         
         now_nav=1
 
@@ -282,8 +317,39 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
             })
         }
         function enable_md(){
+            wds.setMyEnable(false)
             wds.putString('index_url',"file:///android_asset/local_html/index-md.html")
             wd.toast('请重启应用')
+        }
+        function del(p){
+            mdui.setColorScheme('#554844');
+            mdui.confirm({
+                description:'确定删除'+p+'?',
+                closeOnOverlayClick:true,
+                onClose:function(){
+                    mdui.setColorScheme('#FF009688');
+                },
+                onConfirm:function(){
+                    mdui.confirm({
+                        headline:'最后一次询问',
+                        closeOnOverlayClick:true,
+                        description:'执意要删除'+p+'吗?',
+                        onOpen:function(d){
+                            mdui.setColorScheme('#FF0000');
+                            d.style.background="rgba(44,0,0,0.6)"
+                        },
+                        onClosed:function(){
+                            mdui.setColorScheme('#FF009688');
+                        },
+                        onConfirm:function(){
+                            $('[show="no-editing-project"]').attr("style","display:block")
+                            $('[show="has-editing-project"]').attr("style","display:none")
+                            wds.del(p)
+                        }
+                    })
+                    
+                }
+            })
         }
         setInterval(function(){
             if(projects!=JSON.parse(wds.listProject())){

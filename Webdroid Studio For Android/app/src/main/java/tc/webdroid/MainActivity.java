@@ -45,10 +45,12 @@ public class MainActivity extends Activity {
 		}
 		DedroidWeb.WebPage wp=new DedroidWeb.WebPage(this,indexUrl);
 		wv=wp.getWebView();
-		JsBridge.setAttr(this,this,wv);
-		wv.addJavascriptInterface(new JsBridge(),"wds");
-		tc.webdroid.template.JsBridge.setAttr(this,this,wv);
-		wv.addJavascriptInterface(new tc.webdroid.template.JsBridge.webdroid(),"wd");
+		JsBridge jsb=new JsBridge();
+		jsb.setAttr(this,this,wv);
+		wv.addJavascriptInterface(jsb,"wds");
+		tc.webdroid.template.JsBridge jsb2=new tc.webdroid.template.JsBridge();
+		jsb2.setAttr(this,this,wv);
+		wv.addJavascriptInterface(jsb2,"wd");
 		WebSettings settings = wv.getSettings();
         settings.setUseWideViewPort(true);//设定支持viewport
         settings.setLoadWithOverviewMode(true);   //自适应屏幕
@@ -83,12 +85,12 @@ public class MainActivity extends Activity {
 		return;
 	}
 	public static class JsBridge{
-		static private Context _context;
-		static private Activity _activity;
-		static private WebView _webview;
+		private Context _context;
+		private Activity _activity;
+	    private WebView _webview;
 		static private String projectPath=DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects/";
 
-		static public void setAttr(Context ctx, Activity act, WebView wv)
+		public void setAttr(Context ctx, Activity act, WebView wv)
 		{
 			_context = ctx;
 			_activity = act;
@@ -123,7 +125,6 @@ public class MainActivity extends Activity {
 			DedroidFile.mkdir(DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects");
 			final String[] projects=DedroidFile.listName(DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects/").toArray(new String[0]);
 			if(projects.length==0){
-				//DedroidToast.toast(mc,"无项目，请查看"+_context.getString(R.string.s_explanation));
 				return "[]";
 			}
 			return new JSONArray(projects).toString();
@@ -179,6 +180,18 @@ public class MainActivity extends Activity {
 			i.putExtra("project",n);
 			i.putExtra("file",f);
 			_activity.startActivity(i);
+		}
+		@JavascriptInterface
+		public void del(String n){
+			Utils.deleteDir(new File(DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects/"+n));
+			Toast.makeText(_activity,"删除成功",Toast.LENGTH_SHORT);
+		}
+		@JavascriptInterface
+		public void setMyEnable(boolean s){
+			SharedPreferences sp=_context.getSharedPreferences("configs",_context.MODE_PRIVATE);
+			SharedPreferences.Editor spe=sp.edit();
+			spe.putBoolean("enable_my",s);
+			spe.apply();
 		}
 		@JavascriptInterface
 		public void template(){

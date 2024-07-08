@@ -18,8 +18,6 @@ public class EditorActivity extends Activity {
     
     public static final String TAG = "EditorActivity";
     private static Activity mc;
-	private static View dialog_creator_view;
-	private static AlertDialog dialog_creator;
 	private WebView wv;
 	private long exitTime = 0;
 	
@@ -32,17 +30,20 @@ public class EditorActivity extends Activity {
         }
         mc=this;
 		Dedroid.requestPermission(mc,Manifest.permission.WRITE_EXTERNAL_STORAGE);
-		String indexUrl=DedroidConfig.getString(this,"configs","index_editor_url");
 		Intent i=getIntent();
-		if(indexUrl.equals("")){
-			indexUrl="file:///android_asset/local_html/editor.html?project="+URLEncoder.encode(i.getStringExtra("project"));
+		String indexUrl="file:///android_asset/local_html/editor.html";
+		if(!this.getSharedPreferences("configs",this.MODE_PRIVATE).getBoolean("enable_my",true)){
+			indexUrl="file:///android_asset/local_html/editor-md.html";
 		}
+		indexUrl=indexUrl+"?project="+URLEncoder.encode(i.getStringExtra("project"));
 		DedroidWeb.WebPage wp=new DedroidWeb.WebPage(this,indexUrl);
 		wv=wp.getWebView();
-		MainActivity.JsBridge.setAttr(this,this,wv);
-		wv.addJavascriptInterface(new MainActivity.JsBridge(),"wds");
-		tc.webdroid.template.JsBridge.setAttr(this,this,wv);
-		wv.addJavascriptInterface(new tc.webdroid.template.JsBridge.webdroid(),"wd");
+		MainActivity.JsBridge jsb=new MainActivity.JsBridge();
+		jsb.setAttr(this,this,wv);
+		wv.addJavascriptInterface(jsb,"wds");
+		tc.webdroid.template.JsBridge jsb2=new tc.webdroid.template.JsBridge();
+		jsb2.setAttr(this,this,wv);
+		wv.addJavascriptInterface(jsb2,"wd");
 		WebSettings settings = wv.getSettings();
         settings.setUseWideViewPort(true);//设定支持viewport
         settings.setLoadWithOverviewMode(true);   //自适应屏幕

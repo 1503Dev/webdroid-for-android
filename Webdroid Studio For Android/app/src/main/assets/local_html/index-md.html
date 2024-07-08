@@ -57,7 +57,9 @@
             right:224px;
         }
         
-
+        [fab-delete]{
+            right:288px;
+        }
         
         .mdui-list-item .mdui-list-item-avatar,
         .mdui-list-item img{
@@ -162,6 +164,9 @@
             <div class="mdui-fab mdui-color-theme-accent" fab-code onclick="wds.code(editing_project,false)">
                 <i class="mdui-icon material-icons">code</i>
             </div>
+            <div class="mdui-fab mdui-color-red" fab-delete onclick="del(editing_project)">
+                <i class="mdui-icon material-icons">delete</i>
+            </div>
         </div>
     </div>
     <div id="nav-3" class="nav mdui-typo">
@@ -247,6 +252,33 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
             }
         }
         
+        function getUpdate(r,c){
+            if(r!==void 0){
+                if(r===false){
+                    return
+                }
+                r=decode(r).replace(/\+/g,' ')
+                let data=JSON.parse(r)
+                if (wd.getVersionCode()<data.version_code){
+                    mdui.confirm(
+                        data.version_name,
+                        '有新版本',
+                        function(){
+                            Dedroid.jumpUrl(data.update_url)
+                        },
+                        function(){},
+                        {
+                            confirmText:'更新'
+                        })
+                }
+                return
+            }
+            wd.httpGet(
+                'https://verc.1503dev.top/api/lasted/?app=Webdroid_Studio_Android',
+                'getUpdate',
+                0)
+        }
+        
         function encode(s){
             return encodeURIComponent(s)
         }
@@ -254,6 +286,8 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
         function decode(s){
             return decodeURIComponent(s)
         }
+        
+        getUpdate()
         
         now_nav=1
 
@@ -328,9 +362,22 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
             if(ver<86){
                 wd.toastLong("你的WebView版本("+ver+")<86，无法启用")
             } else {
+                wds.setMyEnable(true)
                 wds.putString('index_url',"file:///android_asset/local_html/index.html")
                 wd.toast('请重启应用')
             }
+        }
+        function del(p){
+            mdui.confirm('确定删除'+p+'?',
+                function(){
+                    mdui.confirm('执意要删除'+p+'吗?',
+                        '最后一次询问',
+                        function(){
+                            $('[show="no-editing-project"]').attr("style","width:100%;margin-left:16px")
+                            $('[show="has-editing-project"]').attr("style","display:none")
+                            wds.del(p)
+                        })
+                })
         }
         setInterval(function(){
             if(projects!=JSON.parse(wds.listProject())){
