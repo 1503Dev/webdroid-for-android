@@ -64,7 +64,7 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const project = urlParams.get('project');
-        if(!project||project=="") window.location.replace("?project=wds")
+        //if(!project||project=="") window.location.replace("?project=wds")
     </script>
     <div id="inner">
         <mdui-top-app-bar style="position: relative;box-shadow: 0px 1px 5px rgba(0,0,0,0.1);">
@@ -75,7 +75,7 @@
                 </script>
             </mdui-top-app-bar-title>
             <div style="flex-grow: 1"></div>
-            <mdui-button-icon icon="exit_to_app" onclick="exit()"></mdui-button-icon>
+            <mdui-button-icon style="display:none;" icon="exit_to_app" onclick="exit()"></mdui-button-icon>
             <mdui-dropdown>
                 <mdui-button-icon icon="settings" slot="trigger"></mdui-button-icon>
                 <mdui-menu style="padding:6px 8px 6px 8px">
@@ -95,7 +95,8 @@
     </div>
     
     <mdui-navigation-drawer close-on-overlay-click id="dra_files" open="false">
-        <mdui-button full-width onclick="openFile()" style="margin:8px">打开文件</mdui-button>
+        <mdui-button full-width onclick="path='html';go('/')" style="margin:8px">回到项目</mdui-button>
+        <mdui-button full-width onclick="go('..')" style="margin:8px">返回上一级</mdui-button>
         <mdui-list style="margin:8px" id="file_list">
             <mdui-list-item disable icon="{{ icon }}" rounded onclick="go('{{ file_ec }}')">{{ file }}</mdui-list-item>
         </mdui-list>
@@ -162,7 +163,7 @@
             let files=listFile(path)
             files.forEach(function(e){
                 h=h+file_list_def
-                    .replace('disable',fileDisabled(root+path+"/"+e))
+                    //.replace('disable',fileDisabled(root+path+"/"+e))
                     .replace('{{ file }}',e)
                     .replace('{{ file_ec }}',encode(e))
                     .replace('{{ icon }}',getFileIcon(root+path+"/"+e))
@@ -175,6 +176,11 @@
         initFiles()
         function go(f){
             f=decode(f)
+            if(wd.isDir(root+path+f)){
+                path=path+f+"/"
+                listf()
+                return
+            }
             loadContent(path+f)
             dra_files.open=false
         }
@@ -235,28 +241,6 @@
             editor.moveCursorTo(0,0,false)
         }
         loadContent(file)
-        function openFile(){
-            mdui.prompt({
-                description: "打开文件",
-                closeOnOverlayClick:true,
-                confirmText: "打开",
-                onOpen:function(d){
-                    d.childNodes.forEach(function(e){
-                        if(e.tagName.toLowerCase()=="mdui-text-field"){
-                            e.value=file
-                        }
-                    })
-                },
-                cancelText: "",
-                onCancel:function(){
-                    this.open=false
-                },
-                onConfirm: function(v){
-                    dra_files.open=false
-                    window.loadContent(v)
-                }
-            });
-        }
         function exit(){
             mdui.confirm({
                 description: "是否保存",

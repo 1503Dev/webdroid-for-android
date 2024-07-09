@@ -8,8 +8,8 @@ android {
         applicationId "tc.webdroid"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 9
-        versionName "1.1.4-release"
+        versionCode 10
+        versionName "1.1.5-release"
     }
 
     buildTypes {

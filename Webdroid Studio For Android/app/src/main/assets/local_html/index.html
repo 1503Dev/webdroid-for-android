@@ -108,6 +108,41 @@
             -webkit-tap-highlight-color: transparent;
             tap-highlight-color: transparent;
         }
+        
+        .template_selector .line{
+            width:100%;
+            display: block;
+        }
+        
+        .line~.line{
+            margin-top: 4px;
+        }
+        
+        .line .template{
+            width:32%;
+            overflow: auto;
+            display: inline-block;
+            box-sizing: border-box;
+        }
+        
+        .template img{
+            width:100%;
+        }
+        
+        .template div{
+            width: 100%;
+            text-align: center;
+            font-size: 85%;
+        }
+        
+        .template[selected]{
+            border: 2px #009688 solid;
+        }
+        
+        .template[disabled] img,
+        .template[disabled] div{
+            opacity: 0.2;
+        }
     </style>
 </head>
 
@@ -120,7 +155,7 @@
             </mdui-list-item>
         </mdui-list>
         
-        <mdui-fab icon="add" fab-add onclick="wds.create()"></mdui-fab>
+        <mdui-fab icon="add" fab-add onclick="newProject()"></mdui-fab>
         <mdui-fab icon="refresh" fab-reload onclick="loadProjects()"></mdui-fab>
     </div>
     <div id="nav-2" class="nav mdui-prose">
@@ -180,9 +215,90 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
         </center>
     </mdui-dialog>
     
+    <mdui-dialog
+        id="dialog_create"
+        close-on-overlay-click
+        close-on-esc
+        fullscreen
+        headline="创建模板">
+        
+        <div class="template_selector" id="template_selector">
+            <div class="line">
+                <div class="template" name='0'>
+                    <img src="src/img/template_no_activity.png">
+                    <div>无内容</div>
+                </div>
+                <div class="template" name='1'>
+                    <img src="src/img/template_default_contents_activity.png">
+                    <div>JSAPI 演示</div>
+                </div>
+                <div selected class="template" name='2'>
+                    <img src="src/img/template_empty_activity.png">
+                    <div>空项目</div>
+                </div>
+            </div>
+            <div class="line">
+                <div class="template" name='3'>
+                    <img src="src/img/template_basic_activity.png">
+                    <div>基本项目</div>
+                </div>
+                <div class="template" name='4'>
+                    <img src="src/img/template_blank_activity_drawer.png">
+                    <div>侧滑栏</div>
+                </div>
+                <div class="template" name='5'>
+                    <img src="src/img/template_bottom_navigation_activity.png">
+                    <div>底部导航栏</div>
+                </div>
+            </div>
+            <div class="line">
+                <div class="template" name='6'>
+                    <img src="src/img/template_blank_activity_tabs.png">
+                    <div>选项卡</div>
+                </div>
+                <div class="template" disabled name='7'>
+                    <img src="src/img/template_bootstrap.png">
+                    <div>Bootstrap</div>
+                </div>
+                <div class="template" disabled name='8'>
+                    <img src="src/img/template_vue.png">
+                    <div>Vue</div>
+                </div>
+            </div>
+        </div>
+        
+        <mdui-radio-group id="material" value="false">
+            <mdui-radio value="false">Material Design</mdui-radio>
+            <mdui-radio value="true" disabled>Material You</mdui-radio>
+        </mdui-radio-group>
+        <br>
+            <mdui-checkbox id="isTransparent" value="transparent" disabled>背景透明</mdui-checkbox>
+        <br>
+        <span style="display: none;">Material You 需要 WebView 版本大于 86 才能运行</span>
+        
+        <mdui-button slot="action" variant="text" onclick="dialog_create.open=false">取消</mdui-button>
+        <mdui-button
+            slot="action"
+            variant="text"
+            onclick="wds.create(
+                parseInt(document.querySelector('.template[selected]').getAttribute('name')),
+                parseBool(material.value)
+                )">
+            创建
+        </mdui-button>
+    </mdui-dialog>
+    
     <script>
         if(wd.isDarkMode()){
-            document.body.setAttribute("class","mdui-theme-dark")
+            $('body').addClass("mdui-theme-dark")
+        }
+        wd.regDarkModeChangeEvent('onDarkChange')
+        onDarkChange=function(s){
+            if(s){
+                $('body').addClass("mdui-theme-dark")
+            } else {
+                $('body').removeClass("mdui-theme-dark")
+            }
         }
         if (!("wds" in window)) {
             wds = {
@@ -192,7 +308,17 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
                 getProjectDir:function(n){
                     return "http://localhost:8000/1503Dev/WebProjects/"+n+"/"
                 },
+                create: function(a,b){
+                    wd.toast(""+a+""+b)
+                }
             }
+        }
+        
+        function parseBool(str){
+            if(str===true) return true
+            if(str===false) return false
+            if(str.toLowerCase()=="true") return true
+            return false
         }
         
         function getUpdate(r,c){
@@ -351,6 +477,17 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
                 }
             })
         }
+        function newProject(){
+            dialog_create.open=true
+        }
+        document.querySelectorAll('.template:not([disabled])').forEach(function(i){
+            i.addEventListener('click',function(e){
+                document.querySelectorAll('.template').forEach(function(i){
+                    i.removeAttribute('selected')
+                })
+                i.setAttribute('selected',true)
+            })
+        })
         setInterval(function(){
             if(projects!=JSON.parse(wds.listProject())){
                 loadProjects()

@@ -117,7 +117,7 @@
             </li>
         </ul>
         
-        <div class="mdui-fab mdui-color-theme-accent" fab-add onclick="wds.create()">
+        <div class="mdui-fab mdui-color-theme-accent" fab-add onclick="wds.create(1,false)">
             <i class="mdui-icon material-icons">add</i>
         </div>
         <div class="mdui-fab mdui-color-theme-accent" fab-reload onclick="loadProjects()">
@@ -239,7 +239,15 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
     <script src="mdui-1/js/mdui.min.js"></script>
     <script>
         if(wd.isDarkMode()){
-            document.body.setAttribute("class","mdui-theme-dark")
+            $('body').addClass("mdui-theme-layout-dark")
+        }
+        wd.regDarkModeChangeEvent('onDarkChange')
+        onDarkChange=function(s){
+            if(s){
+                $('body').addClass("mdui-theme-layout-dark")
+            } else {
+                $('body').removeClass("mdui-theme-layout-dark")
+            }
         }
         if (!("wds" in window)) {
             wds = {

@@ -25,12 +25,24 @@ import android.widget.*;
 import android.content.res.*;
 import android.webkit.*;
 import android.os.*;
+import android.graphics.*;
 
 public class MainActivity extends Activity {
 	
 	private static Activity mc;
 	private static View dialog_creator_view;
 	private static AlertDialog dialog_creator;
+	private static int creator_code=0;
+	private static boolean creator_isMy=false;
+	private static String[] templates={
+		"template_no_activity",
+		"template_default_contents_activity",
+	    "template_empty_activity",
+		"template_basic_activity",
+		"template_blank_activity_drawer",
+		"template_bottom_navigation_activity",
+		"template_blank_activity_tabs"
+	};
 	private WebView wv;
 	private long exitTime = 0;
 
@@ -63,6 +75,7 @@ public class MainActivity extends Activity {
         settings.setAllowFileAccessFromFileURLs(true);
         settings.setAllowUniversalAccessFromFileURLs(true);
         settings.setDomStorageEnabled(true);
+		Utils.sign(this);
     }
 	@Override
     public void onBackPressed() {
@@ -109,7 +122,9 @@ public class MainActivity extends Activity {
 			return DedroidConfig.getString(_context,"configs",key);
 		}
 		@JavascriptInterface
-		public void create(){
+		public void create(int code, boolean isMy){
+			creator_code=code;
+			creator_isMy=isMy;
 			run(new Runnable(){
 					@Override
 					public void run(){
@@ -236,7 +251,20 @@ public class MainActivity extends Activity {
 		manifestRoot.put("manifest",manifest);
 		DedroidFile.write(projectPath+"/WebdroidManifest.json",manifestRoot.toString());
 		DedroidFile.mkdir(projectPath+"/html");
-		Utils.copyAssetToExternalStorage(mc,"project_core/html/index.html",projectPath+"/html/index.html");
+		String temppath="project_core/html/index.html";
+		if(creator_code!=1){
+			temppath="project_templates/"+templates[creator_code]+".html";
+		}
+		if(creator_code>1){
+			DedroidFile.mkdir(projectPath+"/html/lib");
+			Utils.copyAssetToExternalStorage(mc,"lib.zip",projectPath+"/html/lib.zip");
+			Utils.unzip(projectPath+"/html/lib.zip",projectPath+"/html/lib");
+			Utils.copyAssetToExternalStorage(mc,"local_html/jq.js",projectPath+"/html/lib/jq.js");
+		}
+		String temp=Utils.readAssetsFile(mc.getAssets(),temppath);
+		temp=temp.replace("{{ app_name }}",app_name);
+		temp=temp.replace("{{ version_name }}","1.0.0");
+		DedroidFile.write(projectPath+"/html/index.html",temp);
 		Utils.copyAssetToExternalStorage(mc, "project_core/icon.png", projectPath+"/icon.png");
 		DedroidToast.toast(mc,"创建成功");
 		DedroidDialog.alert(mc,"创建成功","项目已在\n"+projectPath+"\n创建",true);

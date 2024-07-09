@@ -16,17 +16,19 @@ import org.json.*;
 import androidx.core.content.*;
 import java.util.concurrent.*;
 import java.util.*;
+import android.view.*;
+import android.graphics.*;
 
 public class JsBridge
 {
 	static private Context _context;
 	static private Activity _activity;
 	static private WebView _webview;
-	static private int webdroidApiVersion=5;
+	static private int webdroidApiVersion=6;
 	static public String darkChangeCalklback="void";
 	static public List<String> blockedUrls=new ArrayList<>();
 
-	public void setAttr(Context ctx, Activity act, WebView wv)
+	static public void setAttr(Context ctx, Activity act, WebView wv)
 	{
 		_context = ctx;
 		_activity = act;
@@ -35,6 +37,18 @@ public class JsBridge
 	public void run(Runnable r)
 	{
 		_activity.runOnUiThread(r);
+	}
+	public void runJs(final String js)
+	{
+		run(new Runnable(){
+
+				@Override
+				public void run()
+				{
+					_webview.evaluateJavascript("javascript:"+js,null);
+				}
+			
+		});
 	}
 	@JavascriptInterface
 	public int getVersion()
@@ -106,6 +120,21 @@ public class JsBridge
 	{
 		return "file://" + DedroidFile.EXTERN_STO_PATH + "/";
 	}
+	@JavascriptInterface
+	public void setStatusBarColor(final int colorR,final int colorG,final int colorB){
+		run(new Runnable(){
+
+				@Override
+				public void run()
+				{
+					Window window = _activity.getWindow();
+					window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+					window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+					window.setStatusBarColor(Color.rgb(colorR,colorG,colorB));
+				}
+		});
+		
+	}
 	//设置
 	@JavascriptInterface
 	public boolean setIndexUrl(String url)
@@ -167,6 +196,31 @@ public class JsBridge
 	public boolean isDir(String path)
 	{
 		return new File(path).isDirectory();
+	}
+	@JavascriptInterface
+	public String readFile(String path){
+		try
+		{
+			return DedroidFile.read(path);
+		}
+		catch (IOException e)
+		{
+			runJs("onException('IOException','"+URLEncoder.encode(e+"")+"')");
+			return null;
+		}
+	}
+	@JavascriptInterface
+	public boolean writeString(String path,String str){
+		try
+		{
+			DedroidFile.write(path, str);
+			return true;
+		}
+		catch (IOException e)
+		{
+			runJs("onException('IOException','"+URLEncoder.encode(e+"")+"')");
+			return false;
+		}
 	}
 	// 软件包
 	@JavascriptInterface
@@ -344,17 +398,9 @@ public class JsBridge
 		System.exit(status);
 	}
 	@JavascriptInterface
-	public boolean startActivity(String packageName)
+	public void startActivity(String packageName)
 	{
-		try
-		{
-			Dedroid.startActivity(_context, packageName);
-			return true;
-		}
-		catch (ClassNotFoundException e)
-		{
-			return false;
-		}
+		Dedroid.launchApp(_context, packageName);
 	}
 	@JavascriptInterface
 	public boolean startActivity(String packageName, String activityName)
@@ -410,6 +456,25 @@ public class JsBridge
 	public void regDarkModeChangeEvent(String callback)
 	{
 		darkChangeCalklback = callback;
+	}
+	@JavascriptInterface int getSdk(){
+		return Utils.getSdk();
+	}
+	// 意图
+	@JavascriptInterface
+	public boolean hasExtra(String extraName){
+		Intent i=_activity.getIntent();
+		return i.hasExtra(extraName);
+	}
+	@JavascriptInterface
+	public String getStringExtra(String extraName){
+		Intent i=_activity.getIntent();
+		return i.getStringExtra(extraName);
+	}
+	@JavascriptInterface
+	public int getIntExtra(String extraName){
+		Intent i=_activity.getIntent();
+		return i.getIntExtra(extraName,0);
 	}
 	// 网络
 	@JavascriptInterface

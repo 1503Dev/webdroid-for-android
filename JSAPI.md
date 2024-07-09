@@ -1,8 +1,14 @@
 # Webdroid Javascript Interface
-![JSAPI version](https://img.shields.io/badge/JSAPI-5-blue)
+![JSAPI version](https://img.shields.io/badge/JSAPI-6-blue)
 
 简体中文
 
+
+**对于抛出异常的处理**
+```javascript
+// 当收到异常后执行JS
+  onException(String 异常类型, String URIEncode后的异常内容)
+```
 
 **`[]`内的为可选参数**
 ```javascript
@@ -19,6 +25,8 @@
   // String: 获取assets地址(file:///android_asset/)
   wd.getStorageUrl()
   // String: 返回储存根目录地址(file:///storage/emulated/0/)
+  wd.setStatusBarColor(int colorR, int colorG, int colorB)
+  // void: 设置状态栏颜色
 
 // 设置
   wd.setIndexUrl(String url)
@@ -35,6 +43,10 @@
   // String: 列出dir目录下的所有文件(返回JSONArray字符串)
   wd.isDir(String filePath)
   // boolean: 文件是否为文件夹
+  wd.readFile(String filePath)
+  // String: 读取文件内容，失败则返回null并抛出异常
+  wd.writeString(String filePath, String str)
+  // boolean: 写入文件内容，失败则返回false并抛出异常
 
 // 软件包
   wd.getPackageName()
@@ -80,7 +92,7 @@
   wd.exit([int exitCode])
   // void: 闪退(exitCode默认为0)
   wd.startActivity(String packageName[, String activityName])
-  // boolean: 启动指定应用(activityName可空(实验))，返回是否启动成功
+  // boolean: 启动指定应用(activityName可空)，返回是否启动成功
   wd.requestPermission(String permissionName)
   // void: 申请指定权限
   wd.hasPermission(String permissionName)
@@ -91,6 +103,16 @@
   // boolean: 是否为深色模式，安卓10以下直接返回false
   wd.regDarkModeChangeEvent(String callback)
   // void(async): 监听深色模式状态变化事件，深色模式执行js: callback(true)，反之执行callback(false)
+  wd.getSdk()
+  // int: 获取安卓SDK版本
+
+// 意图
+  wd.hasExtra(String extraName)
+  // boolean: 是否存在指定参数
+  wd.getStringExtra(String extraName)
+  // String: 获取指定字符串参数
+  wd.getIntExtra(String extraName)
+  // int: 获取指定整数参数(不存在返回0)
 
 // 网络
   wd.isNetworkAvailable()

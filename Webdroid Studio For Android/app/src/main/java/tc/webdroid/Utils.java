@@ -5,6 +5,9 @@ import java.io.*;
 import tc.dedroid.util.*;
 import android.util.*;
 import java.util.zip.*;
+import android.widget.*;
+import java.nio.charset.*;
+import android.graphics.*;
 
 public class Utils{
 	public static void copyAssetToExternalStorage(Context context, String assetPath, String outputPath) throws IOException {
@@ -157,7 +160,10 @@ public class Utils{
 				}
 			}
 		}
-		// 目录此时应为空，尝试删除
 		return dir.delete();
+	}
+	
+	public static void sign(Context ctx){
+		// Under development
 	}
 }

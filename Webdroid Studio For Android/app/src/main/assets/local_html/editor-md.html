@@ -42,7 +42,7 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const project = urlParams.get('project');
-        if(!project||project=="") window.location.replace("?project=wds")
+        //if(!project||project=="") window.location.replace("?project=wds")
     </script>
     <div id="inner">
         <div class="mdui-appbar mdui-appbar-fixed">
@@ -56,7 +56,7 @@
                     </script>
                 </a>
                 <div class="mdui-toolbar-spacer"></div>
-                <a class="mdui-btn mdui-btn-icon" onclick="exit()">
+                <a style="display:none;" class="mdui-btn mdui-btn-icon" onclick="exit()">
                     <i class="mdui-icon material-icons">exit_to_app</i>
                 </a>
                 <a class="mdui-btn mdui-btn-icon" mdui-dialog="{target: '#settingsDialog'}">
@@ -92,7 +92,19 @@
     </div>
     
     <div class="mdui-drawer" id="dra_files">
-        <button onclick="openFile()" class="mdui-btn mdui-btn-dense mdui-color-theme-accent mdui-ripple" style="margin:8px;width:calc(100% - 16px)">打开文件</button>
+        <button
+            onclick="path='html';go('/')"
+            class="mdui-btn mdui-btn-dense mdui-color-theme-accent mdui-ripple"
+            style="margin:8px;width:calc(100% - 16px)">
+            回到项目
+        </button>
+        <br>
+        <button
+            onclick="go('..')"
+            class="mdui-btn mdui-btn-dense mdui-color-theme-accent mdui-ripple"
+            style="margin:8px;width:calc(100% - 16px)">
+            返回上一级
+        </button>
         <ul class="mdui-list" id="file_list">
             <li class="mdui-list-item mdui-ripple" disable onclick="go('{{ file_ec }}')">
                 <i class="mdui-list-item-icon mdui-icon material-icons">{{ icon }}</i>
@@ -117,8 +129,19 @@
         var file="html/index.html"
         var editor_theme="chrome"
         if(wd.isDarkMode()){
-            document.body.setAttribute("class","mdui-theme-dark")
+            $('body').addClass("mdui-theme-layout-dark")
             editor_theme="tomorrow_night"
+        }
+        wd.regDarkModeChangeEvent('onDarkChange')
+        onDarkChange=function(s){
+            if(s){
+                $('body').addClass("mdui-theme-layout-dark")
+                editor_theme="tomorrow_night"
+            } else {
+                $('body').removeClass("mdui-theme-layout-dark")
+                editor_theme="chrome"
+            }
+            editor.setTheme("ace/theme/"+editor_theme);
         }
         function listFile(dir){
             let fp=root+dir
@@ -173,6 +196,11 @@
         initFiles()
         function go(f){
             f=decode(f)
+            if(wd.isDir(root+path+f)){
+                path=path+f+"/"
+                listf()
+                return
+            }
             loadContent(path+f)
             dra_files.open=false
         }
@@ -265,17 +293,7 @@
                 fontSize: text_size.value+"px"
             });
         });
-        wd.regDarkModeChangeEvent('onDarkChange')
-        onDarkChange=function(s){
-            if(s){
-                document.body.setAttribute("class","mdui-theme-dark")
-                editor_theme="tomorrow_night"
-            } else {
-                document.body.setAttribute("class","")
-                editor_theme="chrome"
-            }
-            editor.setTheme("ace/theme/"+editor_theme);
-        }
+        
     </script>
 </body>
 
