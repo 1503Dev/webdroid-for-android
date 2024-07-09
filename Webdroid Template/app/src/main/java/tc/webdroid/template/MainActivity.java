@@ -27,9 +27,10 @@ public class MainActivity extends Activity {
 		}
         DedroidWeb.WebPage wp=new DedroidWeb.WebPage(this,indexUrl);
 		wv=wp.getWebView();
-		JsBridge.setAttr(this,this,wv);
-		wv.addJavascriptInterface(new JsBridge.webdroid(),"webdroid");
-		wv.addJavascriptInterface(new JsBridge.webdroid(),"wd");
+		JsBridge jsb=new JsBridge();
+		jsb.setAttr(this,this,wv);
+		wv.addJavascriptInterface(jsb,"webdroid");
+		wv.addJavascriptInterface(jsb,"wd");
 		WebSettings settings = wv.getSettings();
         settings.setUseWideViewPort(true);//设定支持viewport
         settings.setLoadWithOverviewMode(true);   //自适应屏幕

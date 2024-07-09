@@ -1,5 +1,6 @@
 package tc.webdroid.template;
 import android.os.*;
+import android.graphics.*;
 
 public class Utils{
 	public static String removeLastNewline(String str) {
@@ -10,5 +11,11 @@ public class Utils{
 	}
 	public static int getSdk(){
 		return Build.VERSION.SDK_INT;
+	}
+	public static int hexToColor(String hexColor) {
+		if (hexColor.startsWith("#")) {
+			hexColor = hexColor.substring(1); // 移除井号 (#)
+		}
+		return Color.parseColor("#" + hexColor);
 	}
 }

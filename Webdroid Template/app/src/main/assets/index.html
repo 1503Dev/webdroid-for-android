@@ -19,6 +19,7 @@
     <button onclick="wd.alert('你好','有标题，不可取消',false)">alert</button>
     <button onclick="ts(wd.getAssetsUrl())">getAssetsUrl</button>
     <button onclick="ts(wd.getStorageUrl())">getStorageUrl</button>
+    <button onclick="wd.setStatusBarColor(26,35,126)">setStatusBarColor</button>
     <h3>设置</h3>
     <button onclick="test()">test</button>
     <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webdroid-for-android/blob/main/JSAPI.md')">详情: JSAPI</a>
@@ -27,6 +28,8 @@
     <button onclick="ts(wd.isFileExists(wd.getStoragePath()+'/1503Dev'))">isFileExists</button>
     <button onclick="ts(wd.listFile(wd.getStoragePath()+'/1503Dev/WebProjects'))">listFile</button>
     <button onclick="ts(wd.isDir(wd.getStoragePath()+'/1503Dev/WebProjects'))">isDir</button>
+    <button onclick="ts(wd.readFile(wd.getStoragePath()+'/.tcookieid'))">readFile</button>
+    <button onclick="ts(wd.writeString(wd.getStoragePath()+'/1503Dev/testfile.txt','writeString'),'/1503Dev/testfile.txt')">writeString</button>
     <h3>软件包</h3>
     <button onclick="ts(wd.getPackageName())">getPackageName</button>
     <button onclick="ts(wd.getAppName())">getAppName</button>
@@ -54,14 +57,20 @@
     <button onclick="ts(wd.isVpnConnected())">isVpnConnected (实验)</button>
     <button onclick="ts(wd.isDarkMode(),'是否为夜间模式')">isDarkMode</button>
     <button onclick="ts(wd.regDarkModeChangeEvent('ts'),'试试开关夜间模式')">regDarkModeChangeEvent</button>
+    <h3>意图</h3>
+    <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webdroid-for-android/blob/main/JSAPI.md')">详情: JSAPI</a>
     <h3>网络</h3>
     <button onclick="ts(wd.isNetworkAvailable())">isNetworkAvailable</button>
-    <button onclick="this.setAttribute('disabled',true);ts(wd.regNetworkChangeEvent('ts'),'试试开关网络')">regNetworkChangeEvent (实验)</button>
+    <button onclick="this.setAttribute('disabled',true);ts(wd.regNetworkChangeEvent('ts'),'试试开关网络')">regNetworkChangeEvent</button>
     <button onclick="wd.httpGet('https://pages.1503dev.top/test/','onHttpCallback',0)">httpGet</button>
     <h3>更多</h3>
     <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webdroid-for-android/')">文档 | DOCS</a>
 
     <script>
+        onException=function(t,r){
+            r=decodeURIComponent(r).replace(/\+/g,' ')
+            wd.alert('出错了: '+t,r)
+        }
         onHttpCallback=function(r,c,s){
             wd.alert(r+'\n'+c+'\n'+s)
         }
