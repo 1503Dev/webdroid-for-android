@@ -7,7 +7,6 @@
     <meta name="renderer" content="webkit">
     <link rel="stylesheet" href="lib/mdui-1/css/mdui.min.css">
     <script src="lib/jq.js"></script>
-    <title>{{ app_name }}</title>
     <style>
         * {
             user-select: none;
@@ -21,7 +20,9 @@
             <div class="mdui-btn mdui-btn-icon" mdui-drawer="{target: '#drawer'}">
                 <i class="mdui-icon material-icons">menu</i>
             </div>
-            <div class="mdui-typo-title">{{ app_name }}</div>
+            <div class="mdui-typo-title">
+                <script>document.write(wd.getAppName())</script>
+            </div>
         </div>
     </div>
     
@@ -35,7 +36,9 @@
     
     <div class="mdui-drawer mdui-drawer-left" id="drawer">
         <div class="mdui-color-theme" style="width: 100%;height: 144px;">
-            <b style="position: absolute;top: 116px;left: 16px;">v{{ version_name }}</b>
+            <b style="position: absolute;top: 116px;left: 16px;">
+                v<script>document.write(wd.getVersionName())</script>
+            </b>
         </div>
         <ul class="mdui-list" id="file_list">
             <li class="mdui-list-item mdui-ripple" disable onclick="wd.finishAndRemoveTask()">

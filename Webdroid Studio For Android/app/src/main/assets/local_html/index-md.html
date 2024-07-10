@@ -99,6 +99,49 @@
         .mdui-typo-display-2{
             margin:24px 0px 16px 16px;
         }
+        
+        .template_selector .line{
+            width:100%;
+            display: block;
+            margin: 0px;
+            box-sizing: border-box;
+            padding: 0px;
+            overflow: hidden;
+        }
+        
+        .line~.line{
+            margin-top: 4px;
+        }
+        
+        .line .template{
+            overflow: visible;
+            display: inline-block;
+            box-sizing: border-box;
+        }
+        
+        .template img{
+            width:108%;
+        }
+        
+        .template div{
+            width: 100%;
+            text-align: center;
+            font-size: 85%;
+        }
+        
+        .template[selected]{
+            background: rgba(0,0,0,0.1);
+        }
+        
+        .template[disabled] img,
+        .template[disabled] div{
+            opacity: 0.2;
+        }
+        
+        #dialog_create{
+            padding: 0px;
+            overflow: auto;
+        }
     </style>
 </head>
 
@@ -117,7 +160,7 @@
             </li>
         </ul>
         
-        <div class="mdui-fab mdui-color-theme-accent" fab-add onclick="wds.create(1,false)">
+        <div class="mdui-fab mdui-color-theme-accent" fab-add mdui-dialog="{target: '#dialog_create'}">
             <i class="mdui-icon material-icons">add</i>
         </div>
         <div class="mdui-fab mdui-color-theme-accent" fab-reload onclick="loadProjects()">
@@ -200,7 +243,7 @@
         </ul>
     </div>
 
-    <div class="mdui-bottom-nav mdui-bottom-nav-text-auto mdui-color-theme">
+    <div class="mdui-bottom-nav mdui-color-theme">
         <a onclick="switchNav(1)" value="1" class="mdui-ripple mdui-ripple-white mdui-bottom-nav-active">
             <i class="mdui-icon material-icons">playlist_add_check</i>
             <label>项目</label>
@@ -236,6 +279,86 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
         </center>
     </div>
     
+    <div
+        class="mdui-dialog"
+        id="dialog_create">
+        
+        <div class="template_selector" id="template_selector">
+            <div class="line mdui-row-xs-3 mdui-row-sm-5">
+                <div class="template mdui-col mdui-ripple" name='0'>
+                    <img src="src/img/template_no_activity.png">
+                    <div>无内容</div>
+                </div>
+                <div class="template mdui-col mdui-ripple" name='1'>
+                    <img src="src/img/template_default_contents_activity.png">
+                    <div>JSAPI 演示</div>
+                </div>
+                <div selected class="template mdui-col mdui-ripple" name='2'>
+                    <img src="src/img/template_empty_activity.png">
+                    <div>空项目</div>
+                </div>
+                <div class="template mdui-col mdui-ripple" name='3'>
+                    <img src="src/img/template_basic_activity.png">
+                    <div>基本项目</div>
+                </div>
+                <div class="template mdui-col mdui-ripple" name='4'>
+                    <img src="src/img/template_blank_activity_drawer.png">
+                    <div>侧滑栏</div>
+                </div>
+                <div class="template mdui-col mdui-ripple" name='5'>
+                    <img src="src/img/template_bottom_navigation_activity.png">
+                    <div>底部导航栏</div>
+                </div>
+                <div class="template mdui-col mdui-ripple" name='6'>
+                    <img src="src/img/template_blank_activity_tabs.png">
+                    <div>选项卡</div>
+                </div>
+                <div class="template mdui-col mdui-ripple" disabled name='7'>
+                    <img src="src/img/template_bootstrap.png">
+                    <div>Bootstrap</div>
+                </div>
+                <div class="template mdui-col mdui-ripple" disabled name='8'>
+                    <img src="src/img/template_vue.png">
+                    <div>Vue</div>
+                </div>
+            </div>
+        </div>
+        <form style="margin:16px 0px 0px 16px">
+            <label class="mdui-radio">
+                <input type="radio" name="my" checked=""/>
+                <i class="mdui-radio-icon"></i>
+                Material Design
+            </label>
+            &nbsp;&nbsp;
+            <label class="mdui-radio">
+                <input type="radio" name="my" id="radio_my"/>
+                <i class="mdui-radio-icon"></i>
+                Material You
+            </label>
+        </form>
+        
+        <label style="margin:0px 0px 16px 16px" class="mdui-checkbox">
+            <input type="checkbox" disabled=""/>
+            <i class="mdui-checkbox-icon"></i>
+            背景透明
+        </label>
+        <br>
+        <span style="margin-left:16px" >Material You 需要 WebView 版本大于 86 才能运行</span>
+        
+        <div class="mdui-dialog-actions">
+            <button mdui-dialog-close class="mdui-btn mdui-ripple">取消</button>
+            <button
+                mdui-dialog-close
+                class="mdui-btn mdui-ripple"
+                onclick="wds.create(
+                    parseInt(document.querySelector('.template[selected]').getAttribute('name'),10),
+                    parseBool(radio_my.checked)
+                )">
+                创建
+            </button>
+        </div>
+    </div>
+    
     <script src="mdui-1/js/mdui.min.js"></script>
     <script>
         if(wd.isDarkMode()){
@@ -249,6 +372,12 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
                 $('body').removeClass("mdui-theme-layout-dark")
             }
         }
+        function parseBool(str){
+            if(str===true) return true
+            if(str===false) return false
+            if(str.toLowerCase()=="true") return true
+            return false
+        }
         if (!("wds" in window)) {
             wds = {
                 listProject: function() {
@@ -257,6 +386,9 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
                 getProjectDir:function(n){
                     return "http://localhost:8000/1503Dev/WebProjects/"+n+"/"
                 },
+                create:function(a,b){
+                    wd.toast(a+"\n"+b)
+                }
             }
         }
         
@@ -387,6 +519,14 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
                         })
                 })
         }
+        document.querySelectorAll('.template:not([disabled])').forEach(function(i){
+            i.addEventListener('click',function(e){
+                document.querySelectorAll('.template').forEach(function(i){
+                    i.removeAttribute('selected')
+                })
+                i.setAttribute('selected',true)
+            })
+        })
         setInterval(function(){
             if(projects!=JSON.parse(wds.listProject())){
                 loadProjects()

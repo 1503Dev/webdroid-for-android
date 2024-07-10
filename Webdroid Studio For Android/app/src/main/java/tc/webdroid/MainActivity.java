@@ -252,18 +252,26 @@ public class MainActivity extends Activity {
 		DedroidFile.write(projectPath+"/WebdroidManifest.json",manifestRoot.toString());
 		DedroidFile.mkdir(projectPath+"/html");
 		String temppath="project_core/html/index.html";
+		String after="";
+		if(creator_isMy&&creator_code>1){
+			after="_my";
+		}
 		if(creator_code!=1){
-			temppath="project_templates/"+templates[creator_code]+".html";
+			temppath="project_templates/"+templates[creator_code]+after+".html";
 		}
 		if(creator_code>1){
 			DedroidFile.mkdir(projectPath+"/html/lib");
-			Utils.copyAssetToExternalStorage(mc,"lib.zip",projectPath+"/html/lib.zip");
-			Utils.unzip(projectPath+"/html/lib.zip",projectPath+"/html/lib");
 			Utils.copyAssetToExternalStorage(mc,"local_html/jq.js",projectPath+"/html/lib/jq.js");
 		}
+		if(creator_code>1&&creator_isMy){
+			Utils.copyAssetToExternalStorage(mc,"lib-mdui.zip",projectPath+"/html/lib.zip");
+			Utils.unzip(projectPath+"/html/lib.zip",projectPath+"/html/lib");
+		}
+		if(creator_code>1&&!creator_isMy){
+			Utils.copyAssetToExternalStorage(mc,"lib-mdui-1.zip",projectPath+"/html/lib2.zip");
+			Utils.unzip(projectPath+"/html/lib2.zip",projectPath+"/html/lib");
+		}
 		String temp=Utils.readAssetsFile(mc.getAssets(),temppath);
-		temp=temp.replace("{{ app_name }}",app_name);
-		temp=temp.replace("{{ version_name }}","1.0.0");
 		DedroidFile.write(projectPath+"/html/index.html",temp);
 		Utils.copyAssetToExternalStorage(mc, "project_core/icon.png", projectPath+"/icon.png");
 		DedroidToast.toast(mc,"创建成功");
@@ -284,6 +292,7 @@ public class MainActivity extends Activity {
                     {
                         Utils.copyAssetToExternalStorage(mc, "app_core.zip", rootPath+"/app_core.zip");
 						DedroidFile.mkdir(rootPath+"/res/drawable");
+						DedroidFile.mkdir(rootPath+"/res/xml");
 						DedroidFile.mkdir(rootPath+"/META-INF/proguard");
                         Utils.unzip(rootPath+"/app_core.zip",rootPath);
                         DedroidFile.del(rootPath+"/app_core.zip");
