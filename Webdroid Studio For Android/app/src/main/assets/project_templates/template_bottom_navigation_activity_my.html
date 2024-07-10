@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="lib/mdui/mdui.min.css">
+    <link rel="stylesheet" href="lib/mdui/icon.css">
+    <script src="lib/mdui/mdui.min.js"></script>
+    <script src="lib/jq.js"></script>
+    <script>
+        mdui.setColorScheme('#009688')
+    </script>
+    <style>
+        * {
+            user-select: none;
+        }
+        body {
+            margin: 0px;
+        }
+        body > .container {
+            margin: 0px;
+            padding: 0px 8px 8px 8px;
+            width: 100%;
+            height: calc(100vh - 144px);
+            box-sizing: border-box;
+            overflow: auto;
+        }
+        .nav:not(#nav-1) {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <mdui-top-app-bar style="position: relative;">
+        <mdui-top-app-bar-title><script>document.write(wd.getAppName())</script></mdui-top-app-bar-title>
+    </mdui-top-app-bar>
+    
+    <div class="container">
+        <div id="nav-1" class="nav">
+            Page 1
+            <!-- Your code here -->
+        </div>
+        <div id="nav-2" class="nav">
+            Page 2
+            <!-- Your code here -->
+        </div>
+        <div id="nav-3" class="nav">
+            Page 3
+            <!-- Your code here -->
+        </div>
+    </div>
+    
+    <mdui-navigation-bar value="nav-1">
+        <mdui-navigation-bar-item icon="place" onclick="nav(this.value)" value="nav-1">Nav 1</mdui-navigation-bar-item>
+        <mdui-navigation-bar-item icon="commute" onclick="nav(this.value)" value="nav-2">Nav 2</mdui-navigation-bar-item>
+        <mdui-navigation-bar-item icon="people" onclick="nav(this.value)" value="nav-3">Nav 3</mdui-navigation-bar-item>
+    </mdui-navigation-bar>
+
+    <script>
+        function initDarkMode(){
+            if(wd.isDarkMode()){
+                $('body').addClass('mdui-theme-dark')
+            } else {
+                $('body').removeClass('mdui-theme-dark')
+            }
+        }
+        initDarkMode()
+        wd.regDarkModeChangeEvent('initDarkMode')
+        function nav(id){
+            document.querySelectorAll('.nav').forEach(function(e){
+                e.style.display="none"
+            })
+            document.getElementById(id).style.display="block"
+        }
+    </script>
+</body>
+
+</html>

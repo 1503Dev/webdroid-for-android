@@ -8,6 +8,9 @@ import java.util.zip.*;
 import android.widget.*;
 import java.nio.charset.*;
 import android.graphics.*;
+import javax.security.cert.*;
+import java.security.*;
+import java.security.cert.CertificateException;
 
 public class Utils{
 	public static void copyAssetToExternalStorage(Context context, String assetPath, String outputPath) throws IOException {
@@ -165,5 +168,23 @@ public class Utils{
 	
 	public static void sign(Context ctx){
 		// Under development
+		try {
+            copyAssetToExternalStorage(ctx,"defualt_key.keystore",DedroidFile.EXTERN_STO_PATH+"/1503Dev/webdroid_key.keystore");
+			// 加载KeyStore
+			KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+			FileInputStream fileInputStream = new FileInputStream(DedroidFile.EXTERN_STO_PATH+"/1503Dev/webdroid_key.keystore");
+			char[] password = "Webdroid".toCharArray();
+			keystore.load(fileInputStream, password);
+
+			// 获取私钥
+			String alias = "Webdroid";
+			PrivateKey privateKey = (PrivateKey) keystore.getKey(alias, "Webdroid".toCharArray());
+            privateKey.hashCode();
+			System.out.println("Private key loaded successfully.");
+
+		} catch (KeyStoreException | IOException | CertificateException | NoSuchAlgorithmException |
+		UnrecoverableKeyException e) {
+			e.printStackTrace();
+		}
 	}
 }

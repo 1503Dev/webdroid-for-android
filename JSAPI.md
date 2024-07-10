@@ -1,5 +1,5 @@
 # Webdroid Javascript Interface
-![JSAPI version](https://img.shields.io/badge/JSAPI-6-blue)
+![JSAPI version](https://img.shields.io/badge/JSAPI-7-blue)
 
 简体中文
 
@@ -27,6 +27,12 @@
   // String: 返回储存根目录地址(file:///storage/emulated/0/)
   wd.setStatusBarColor(int colorR, int colorG, int colorB)
   // void: 设置状态栏颜色
+  wd.clearCache()
+  // (实验)void: 清除缓存
+  wd.clearCookie()
+  // void: 清除cookie
+  wd.clearWebStorage()
+  // void: 清除localstorage
 
 // 设置
   wd.setIndexUrl(String url)
@@ -47,6 +53,8 @@
   // String: 读取文件内容，失败则返回null并抛出异常
   wd.writeString(String filePath, String str)
   // boolean: 写入文件内容，失败则返回false并抛出异常
+  wd.openFile(String filePath)
+  // void: 调用其他应用打开指定文件
 
 // 软件包
   wd.getPackageName()
@@ -122,9 +130,21 @@
   wd.httpGet(String url, String callback, int symbo)
   /**
    * void(async): 向url发送GET请求，请求结束后执行JS:
-    当请求成功时:
-    callback(String urlencode后的请求结果, int HTTP状态码, int symbo)
-    当请求失败时:
-    callback(false, 0, int symbo)
+   * 当请求成功时:
+   * callback(String urlencode后的请求结果, int HTTP状态码, int symbo)
+   * 当请求失败时:
+   * callback(false, 0, int symbo)
+   */
+  wd.httpPost(String url, String data, String callback, int symbo)
+  /**
+   * void(async): 向url发送POST请求，请求结束后执行JS:
+   * 当请求成功时:
+   * callback(String urlencode后的请求结果, int HTTP状态码, int symbo)
+   * 当请求失败时:
+   * callback(false, int HTTP状态码, int symbo)
+   * 当请求出错时:
+   * callback(false, 0, int symbo)并抛出异常
+   * 
+   * data的格式为查询字符串格式(a=b&c=d)
    */
 ```

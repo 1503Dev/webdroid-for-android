@@ -1,5 +1,6 @@
 package tc.webdroid.template;
 import android.webkit.*;
+import android.webkit.CookieManager;
 import tc.dedroid.util.*;
 import android.content.*;
 import android.app.*;
@@ -18,13 +19,14 @@ import java.util.concurrent.*;
 import java.util.*;
 import android.view.*;
 import android.graphics.*;
+import java.nio.charset.*;
 
 public class JsBridge
 {
 	static private Context _context;
 	static private Activity _activity;
 	static private WebView _webview;
-	static private int webdroidApiVersion=6;
+	static private int webdroidApiVersion=7;
 	static public String darkChangeCalklback="void";
 	static public List<String> blockedUrls=new ArrayList<>();
 
@@ -34,7 +36,7 @@ public class JsBridge
 		_activity = act;
 		_webview = wv;
 	}
-	public void run(Runnable r)
+	public static void run(Runnable r)
 	{
 		_activity.runOnUiThread(r);
 	}
@@ -45,10 +47,10 @@ public class JsBridge
 				@Override
 				public void run()
 				{
-					_webview.evaluateJavascript("javascript:"+js,null);
+					_webview.evaluateJavascript("javascript:" + js, null);
 				}
-			
-		});
+
+			});
 	}
 	@JavascriptInterface
 	public int getVersion()
@@ -121,7 +123,8 @@ public class JsBridge
 		return "file://" + DedroidFile.EXTERN_STO_PATH + "/";
 	}
 	@JavascriptInterface
-	public void setStatusBarColor(final int colorR,final int colorG,final int colorB){
+	public void setStatusBarColor(final int colorR, final int colorG, final int colorB)
+	{
 		run(new Runnable(){
 
 				@Override
@@ -130,10 +133,55 @@ public class JsBridge
 					Window window = _activity.getWindow();
 					window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
 					window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-					window.setStatusBarColor(Color.rgb(colorR,colorG,colorB));
+					window.setStatusBarColor(Color.rgb(colorR, colorG, colorB));
 				}
-		});
-		
+			});
+
+	}
+	@JavascriptInterface
+	public void clearCaches()
+	{
+		_context.getCacheDir().delete();
+		_webview.clearHistory();
+		_webview.clearFormData();
+		_webview.clearCache(true);
+	}
+    @JavascriptInterface
+    public void clearCache()
+	{
+        clearCaches();
+    }
+    @JavascriptInterface
+    public void clearCookies()
+	{
+        if (Build.VERSION.SDK_INT >= 20)
+		{
+            CookieManager cookieManager = CookieManager.getInstance();
+            cookieManager.removeAllCookies(null);
+            cookieManager.flush();
+        }
+		else
+		{
+            CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(_context);
+            CookieManager cookieManager = CookieManager.getInstance();
+            cookieManager.removeAllCookie();
+            cookieSyncManager.sync();
+        }
+    }
+    @JavascriptInterface
+    public void clearCookie()
+	{
+        clearCookies();
+	}
+    @JavascriptInterface
+    public void clearWebStorages()
+	{
+        WebStorage.getInstance().deleteAllData();
+    }
+    @JavascriptInterface
+    public void clearWebStorage()
+	{
+        clearWebStorages();
 	}
 	//设置
 	@JavascriptInterface
@@ -173,17 +221,27 @@ public class JsBridge
 		File file = new File(fp);
 		if (file.exists())
 		{
-			Uri uri = Uri.fromFile(file);
-			Intent intent = new Intent(Intent.ACTION_VIEW);
-			intent.setDataAndType(uri, "*/*");
-			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			if (intent.resolveActivity(_context.getPackageManager()) != null)
+			try
 			{
+				Uri path;
+				Intent intent = new Intent(Intent.ACTION_VIEW);
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+				{
+					path = FileProvider.getUriForFile(_context, getPackageName()+".FileProvider", file);
+				}
+				else
+				{
+					path = Uri.fromFile(file);
+				}
+				intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+				String type=Utils.getMimeType(file);
+				intent.setDataAndType(path, type);
 				_activity.startActivity(intent);
 				return true;
 			}
-			else
+			catch (ActivityNotFoundException e)
 			{
+				runJs("onException('ActivityNotFoundException','" + URLEncoder.encode(e.toString()) + "')");
 				return false;
 			}
 		}
@@ -198,19 +256,21 @@ public class JsBridge
 		return new File(path).isDirectory();
 	}
 	@JavascriptInterface
-	public String readFile(String path){
+	public String readFile(String path)
+	{
 		try
 		{
 			return DedroidFile.read(path);
 		}
 		catch (IOException e)
 		{
-			runJs("onException('IOException','"+URLEncoder.encode(e+"")+"')");
+			runJs("onException('IOException','" + URLEncoder.encode(e + "") + "')");
 			return null;
 		}
 	}
 	@JavascriptInterface
-	public boolean writeString(String path,String str){
+	public boolean writeString(String path, String str)
+	{
 		try
 		{
 			DedroidFile.write(path, str);
@@ -218,7 +278,7 @@ public class JsBridge
 		}
 		catch (IOException e)
 		{
-			runJs("onException('IOException','"+URLEncoder.encode(e+"")+"')");
+			runJs("onException('IOException','" + URLEncoder.encode(e + "") + "')");
 			return false;
 		}
 	}
@@ -457,24 +517,29 @@ public class JsBridge
 	{
 		darkChangeCalklback = callback;
 	}
-	@JavascriptInterface int getSdk(){
+	@JavascriptInterface 
+	public int getSdk()
+	{
 		return Utils.getSdk();
 	}
 	// 意图
 	@JavascriptInterface
-	public boolean hasExtra(String extraName){
+	public boolean hasExtra(String extraName)
+	{
 		Intent i=_activity.getIntent();
 		return i.hasExtra(extraName);
 	}
 	@JavascriptInterface
-	public String getStringExtra(String extraName){
+	public String getStringExtra(String extraName)
+	{
 		Intent i=_activity.getIntent();
 		return i.getStringExtra(extraName);
 	}
 	@JavascriptInterface
-	public int getIntExtra(String extraName){
+	public int getIntExtra(String extraName)
+	{
 		Intent i=_activity.getIntent();
-		return i.getIntExtra(extraName,0);
+		return i.getIntExtra(extraName, 0);
 	}
 	// 网络
 	@JavascriptInterface
@@ -543,5 +608,52 @@ public class JsBridge
 						});
 				}
 			}).start();
+	}
+	@JavascriptInterface
+	public void httpPost(final String requestUrl, final String data, final String callback, final int symbo)
+	{
+		new Thread(new Runnable(){
+				@Override
+				public void run()
+				{
+					try
+					{
+						URL url = new URL(requestUrl);
+						HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+						connection.setRequestMethod("POST");
+						connection.setDoOutput(true);
+						connection.setDoInput(true);
+						connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+						try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
+							wr.writeBytes(data);
+							wr.flush();
+						}
+						int responseCode = connection.getResponseCode();
+						if (responseCode == HttpURLConnection.HTTP_OK)
+						{
+							InputStream inputStream = connection.getInputStream();
+							InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+							StringBuilder response = new StringBuilder();
+							try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
+								String line;
+								while ((line = reader.readLine()) != null)
+								{
+									response.append(line);
+								}
+								runJs(callback+"('"+Utils.removeLastNewline(response.toString())+"',"+responseCode+","+symbo+")");
+							}
+						}
+						else
+						{
+							runJs(callback+"(false,"+responseCode+","+symbo+")");
+						}
+					}
+					catch (MalformedURLException | IOException e)
+					{
+						runJs(callback+"(false,0,"+symbo+")");
+						runJs("onException('MalformedURLException|IOException','"+URLEncoder.encode(e.toString())+"')");
+					}
+				}
+		}).start();
 	}
 }

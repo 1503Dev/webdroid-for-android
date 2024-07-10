@@ -269,18 +269,18 @@ SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webd
         
         <mdui-radio-group id="material" value="false">
             <mdui-radio value="false">Material Design</mdui-radio>
-            <mdui-radio value="true" disabled>Material You</mdui-radio>
+            <mdui-radio value="true">Material You</mdui-radio>
         </mdui-radio-group>
         <br>
             <mdui-checkbox id="isTransparent" value="transparent" disabled>背景透明</mdui-checkbox>
         <br>
-        <span style="display: none;">Material You 需要 WebView 版本大于 86 才能运行</span>
+        <span>Material You 需要 WebView 版本大于 86 才能运行</span>
         
         <mdui-button slot="action" variant="text" onclick="dialog_create.open=false">取消</mdui-button>
         <mdui-button
             slot="action"
             variant="text"
-            onclick="wds.create(
+            onclick="dialog_create.open=false;wds.create(
                 parseInt(document.querySelector('.template[selected]').getAttribute('name')),
                 parseBool(material.value)
                 )">
