@@ -57,6 +57,28 @@
             padding:2px;
             font:12px monospace;
         }
+        #puncBar{
+            position: fixed;
+            left: 0px;
+            bottom: 0px;
+            width: 100%;
+            z-index: 10;
+        }
+        #puncBar .header{
+            width: 100%;
+            height: 32px;
+        }
+        #puncBar .header .close-btn{
+            position: absolute;
+            right: 4px;
+            top: 0px;
+            z-index: 11;
+        }
+        #puncBar .body{
+            background: gray;
+            box-shadow: 0px 0px 5px rgba(0,0,0,0.4);
+            z-index: 15;
+        }
     </style>
 </head>
 
@@ -80,18 +102,45 @@
                 <mdui-button-icon icon="settings" slot="trigger"></mdui-button-icon>
                 <mdui-menu style="padding:6px 8px 6px 8px">
                     <span>&nbsp;&nbsp;字体大小</span>
-                    <mdui-slider tickmarks id="text_size" min="2" max="20" style="width:160px"></mdui-slider>
+                    <mdui-slider tickmarks id="text_size" min="2" max="20" style="width:188px"></mdui-slider>
                 </mdui-menu>
             </mdui-dropdown>
             <mdui-button-icon icon="undo" onclick="undo()"></mdui-button-icon>
             <mdui-button-icon icon="redo" onclick="redo()"></mdui-button-icon>
-            <mdui-button-icon icon="save" onclick="save();wd.toast('保存成功')"></mdui-button-icon>
+            <mdui-button-icon icon="save" onclick="editor.focus();save();toast('保存成功')"></mdui-button-icon>
             <mdui-button-icon icon="play_arrow" onclick="save();wds.runFile(project,file)"></mdui-button-icon>
         </mdui-top-app-bar>
         <div class="bar_top">
             <div id="label_file"></div>
         </div>
         <div id="editorView"></div>
+        <div id="puncBar">
+            <div class="header">
+                <mdui-button-icon onclick="$('#puncBar>.body').slideToggle()" icon="swap_vert" class="close-btn"></mdui-button-icon>
+            </div>
+            <div class="body">
+                <mdui-chip>&lt;</mdui-chip>
+                <mdui-chip>&gt;</mdui-chip>
+                <mdui-chip>{</mdui-chip>
+                <mdui-chip>}</mdui-chip>
+                <mdui-chip>[</mdui-chip>
+                <mdui-chip>]</mdui-chip>
+                <mdui-chip>(</mdui-chip>
+                <mdui-chip>)</mdui-chip>
+                <mdui-chip>:</mdui-chip>
+                <mdui-chip>;</mdui-chip>
+                <mdui-chip>$</mdui-chip>
+                <mdui-chip>'</mdui-chip>
+                <mdui-chip>"</mdui-chip>
+                <mdui-chip>=</mdui-chip>
+                <mdui-chip>?</mdui-chip>
+                <mdui-chip>#</mdui-chip>
+                <mdui-chip>!</mdui-chip>
+                <mdui-chip>/</mdui-chip>
+                <mdui-chip>\</mdui-chip>
+                <mdui-chip>_</mdui-chip>
+            </div>
+        </div>
     </div>
     
     <mdui-navigation-drawer close-on-overlay-click id="dra_files" open="false">
@@ -121,6 +170,12 @@
         if(wd.isDarkMode()){
             document.body.setAttribute("class","mdui-theme-dark")
             editor_theme="tomorrow_night"
+        }
+        function toast(msg){
+            mdui.snackbar({
+                message:msg,
+                autoCloseDelay:1750
+            })
         }
         function listFile(dir){
             let fp=root+dir
@@ -189,14 +244,16 @@
             let c=Dedroid.writeFile(fp,editor.getSession().getValue())
         }
         function undo(){
+            editor.focus()
             if(editor.getSession().getUndoManager().canUndo()){
                 editor.undo()
-            } else wd.toast("不可撤销")
+            } else toast("不可撤销")
         }
         function redo(){
+            editor.focus()
             if(editor.getSession().getUndoManager().canRedo()){
                 editor.redo()
-            } else wd.toast("不可重做")
+            } else toast("不可重做")
         }
         function getType(f){
             r1=f.substring(f.length-4).toLowerCase()
@@ -273,6 +330,15 @@
             }
             editor.setTheme("ace/theme/"+editor_theme);
         }
+        document.querySelectorAll('#puncBar .body mdui-chip').forEach(function(e){
+            e.addEventListener('click',function(ev){
+                editor.focus()
+                let text=e.innerHTML
+                    .replace(/\&lt\;/g,'<')
+                    .replace(/\&gt\;/g,'>')
+                editor.getSession().insert(editor.getCursorPosition(),text)
+            })
+        })
     </script>
 </body>
 

@@ -16,6 +16,7 @@ public class ProjectViewerActivity extends Activity {
     public static final String TAG = "ProjectViewerActivity";
     private WebView wv;
 	private long exitTime = 0;
+	private tc.webdroid.template.JsBridge jsb;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +33,7 @@ public class ProjectViewerActivity extends Activity {
 		}
         DedroidWeb.WebPage wp=new DedroidWeb.WebPage(this,DedroidFile.EXTERN_STO_PATH+"/1503Dev/WebProjects/"+project+"/"+file);
 		wv=wp.getWebView();
-		JsBridge jsb=new JsBridge();
+		jsb=new JsBridge();
 		jsb.setAttr(this,this,wv);
 		wv.addJavascriptInterface(jsb,"webdroid");
 		wv.addJavascriptInterface(jsb,"wd");
@@ -74,10 +75,10 @@ public class ProjectViewerActivity extends Activity {
 		int currentNightMode = newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
 		switch (currentNightMode) {
 			case Configuration.UI_MODE_NIGHT_YES:
-				wv.evaluateJavascript("javascript:"+JsBridge.darkChangeCalklback+"(true)",null);
+				wv.evaluateJavascript("javascript:"+jsb.darkChangeCalklback+"(true)",null);
 				break;
 			case Configuration.UI_MODE_NIGHT_NO:
-				wv.evaluateJavascript("javascript:"+JsBridge.darkChangeCalklback+"(false)",null);
+				wv.evaluateJavascript("javascript:"+jsb.darkChangeCalklback+"(false)",null);
 				break;
 			case Configuration.UI_MODE_NIGHT_UNDEFINED:
 				break;

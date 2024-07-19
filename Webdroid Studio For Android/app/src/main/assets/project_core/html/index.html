@@ -20,9 +20,16 @@
     <button onclick="ts(wd.getAssetsUrl())">getAssetsUrl</button>
     <button onclick="ts(wd.getStorageUrl())">getStorageUrl</button>
     <button onclick="wd.setStatusBarColor(26,35,126)">setStatusBarColor</button>
+    <button onclick="ts(wd.getStatusBarHeight()+'')">getStatusBarHeight</button>
     <button onclick="ts(wd.clearCache(),'清除缓存')">clearCache</button>
     <button onclick="ts(wd.clearCookie(),'清除Cookie')">clearCookie</button>
-        <button onclick="ts(wd.clearWebStorage(),'清除WebStorage')">clearWebStorage</button>
+    <button onclick="ts(wd.clearWebStorage(),'清除WebStorage')">clearWebStorage</button>
+    <button onclick="wd.fullScreen()">fullScreen</button>
+    <button onclick="wd.exitFullScreen()">exitFullScreen</button>
+    <button onclick="wd.landscape()">landscape</button>
+    <button onclick="wd.portrait()">portrait</button>
+    <button onclick="ts(wd.isLandscape()+'')">isLandscape</button>
+    <button onclick="wd.jumpUrl('http://1503dev.top')">jumpUrl</button>
     <h3>设置</h3>
     <button onclick="test()">test</button>
     <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webdroid-for-android/blob/main/JSAPI.md')">详情: JSAPI</a>

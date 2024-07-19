@@ -1,5 +1,5 @@
 # Webdroid Javascript Interface
-![JSAPI version](https://img.shields.io/badge/JSAPI-7-blue)
+![JSAPI version](https://img.shields.io/badge/JSAPI-8-blue)
 
 简体中文
 
@@ -15,6 +15,8 @@
 // 基本
   wd.getVersion()
   // int: 获取内核版本
+  wd.throwException(String type, String info)
+  // void: 抛出异常
   wd.toast(String text)
   // void: 弹出2秒提示
   wd.toastLong(String text)
@@ -27,12 +29,26 @@
   // String: 返回储存根目录地址(file:///storage/emulated/0/)
   wd.setStatusBarColor(int colorR, int colorG, int colorB)
   // void: 设置状态栏颜色
+  wd.getStatusBarHeight()
+  // float: 获取状态栏高度(dp)，出错则抛出异常
   wd.clearCache()
   // (实验)void: 清除缓存
   wd.clearCookie()
   // void: 清除cookie
   wd.clearWebStorage()
   // void: 清除localstorage
+  wd.fullScreen()
+  // void: 全屏
+  wd.exitFullScreen()
+  // void: 退出全屏
+  wd.landscape()
+  // void: 横屏
+  wd.portrait()
+  // void: 竖屏
+  wd.isLandscape()
+  // boolean: 是否为横屏
+  wd.jumpUrl(String url)
+  // void: 跳转到浏览器
 
 // 设置
   wd.setIndexUrl(String url)

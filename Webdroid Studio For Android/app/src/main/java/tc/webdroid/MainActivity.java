@@ -266,10 +266,12 @@ public class MainActivity extends Activity {
 		if(creator_code>1&&creator_isMy){
 			Utils.copyAssetToExternalStorage(mc,"lib-mdui.zip",projectPath+"/html/lib.zip");
 			Utils.unzip(projectPath+"/html/lib.zip",projectPath+"/html/lib");
+			DedroidFile.del(projectPath+"/html/lib.zip");
 		}
 		if(creator_code>1&&!creator_isMy){
 			Utils.copyAssetToExternalStorage(mc,"lib-mdui-1.zip",projectPath+"/html/lib2.zip");
 			Utils.unzip(projectPath+"/html/lib2.zip",projectPath+"/html/lib");
+			DedroidFile.del(projectPath+"/html/lib2.zip");
 		}
 		String temp=Utils.readAssetsFile(mc.getAssets(),temppath);
 		DedroidFile.write(projectPath+"/html/index.html",temp);

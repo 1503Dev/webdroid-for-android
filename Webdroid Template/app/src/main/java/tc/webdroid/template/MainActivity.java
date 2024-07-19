@@ -13,6 +13,7 @@ public class MainActivity extends Activity {
      
 	private WebView wv;
 	private long exitTime = 0;
+	private JsBridge jsb;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +28,7 @@ public class MainActivity extends Activity {
 		}
         DedroidWeb.WebPage wp=new DedroidWeb.WebPage(this,indexUrl);
 		wv=wp.getWebView();
-		JsBridge jsb=new JsBridge();
+		jsb=new JsBridge();
 		jsb.setAttr(this,this,wv);
 		wv.addJavascriptInterface(jsb,"webdroid");
 		wv.addJavascriptInterface(jsb,"wd");
@@ -43,6 +44,7 @@ public class MainActivity extends Activity {
         settings.setAllowFileAccessFromFileURLs(true);
         settings.setAllowUniversalAccessFromFileURLs(true);
         settings.setDomStorageEnabled(true);
+		//jsb.fullScreen();
     }
 	@Override
     public void onBackPressed() {
@@ -66,10 +68,10 @@ public class MainActivity extends Activity {
 		int currentNightMode = newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
 		switch (currentNightMode) {
 			case Configuration.UI_MODE_NIGHT_YES:
-				wv.evaluateJavascript("javascript:"+JsBridge.darkChangeCalklback+"(true)",null);
+				wv.evaluateJavascript("javascript:"+jsb.darkChangeCalklback+"(true)",null);
 				break;
 			case Configuration.UI_MODE_NIGHT_NO:
-				wv.evaluateJavascript("javascript:"+JsBridge.darkChangeCalklback+"(false)",null);
+				wv.evaluateJavascript("javascript:"+jsb.darkChangeCalklback+"(false)",null);
 				break;
 			case Configuration.UI_MODE_NIGHT_UNDEFINED:
 				break;

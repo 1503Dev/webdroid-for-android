@@ -39,6 +39,9 @@
     <!-- 卸载快捷方式 -->
     <uses-permission android:name="com.android.launcher.permission.UNINSTALL_SHORTCUT"/>
 
+    <!-- 此应用可显示在其他应用上方 -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+
     <application
         android:icon="@drawable/ic_launcher"
         android:label="AppName"
@@ -48,7 +51,7 @@
         <activity
             android:name="tc.webdroid.template.MainActivity"
             android:label="LauncherName"
-            android:configChanges="uiMode"
+            android:configChanges="uiMode|orientation|keyboardHidden|screenSize"
             android:exported="true">
 
             <intent-filter>

@@ -20,23 +20,28 @@ import java.util.*;
 import android.view.*;
 import android.graphics.*;
 import java.nio.charset.*;
+import android.view.View.*;
+import java.lang.reflect.*;
+import android.content.res.*;
 
 public class JsBridge
 {
-	static private Context _context;
-	static private Activity _activity;
-	static private WebView _webview;
-	static private int webdroidApiVersion=7;
-	static public String darkChangeCalklback="void";
-	static public List<String> blockedUrls=new ArrayList<>();
+	private Context _context;
+	private Activity _activity;
+	private WebView _webview;
+	private int webdroidApiVersion=8;
+	public String darkChangeCalklback="void";
+	public static int statusBarColor;
+	public List<String> blockedUrls=new ArrayList<>();
 
-	static public void setAttr(Context ctx, Activity act, WebView wv)
+	public void setAttr(Context ctx, Activity act, WebView wv)
 	{
 		_context = ctx;
 		_activity = act;
 		_webview = wv;
+		statusBarColor=Color.rgb(0x00,0x79,0x6B);
 	}
-	public static void run(Runnable r)
+	public void run(Runnable r)
 	{
 		_activity.runOnUiThread(r);
 	}
@@ -51,6 +56,13 @@ public class JsBridge
 				}
 
 			});
+	}
+	public void throwException(String type, Exception e){
+		throwException(type,e.toString());
+	}
+	@JavascriptInterface
+	public void throwException(String type, String info){
+		runJs("onException('"+type+"','"+URLEncoder.encode(info)+"')");
 	}
 	@JavascriptInterface
 	public int getVersion()
@@ -125,6 +137,7 @@ public class JsBridge
 	@JavascriptInterface
 	public void setStatusBarColor(final int colorR, final int colorG, final int colorB)
 	{
+		statusBarColor=Color.rgb(colorR, colorG, colorB);
 		run(new Runnable(){
 
 				@Override
@@ -137,6 +150,55 @@ public class JsBridge
 				}
 			});
 
+	}
+	@JavascriptInterface
+	public float getStatusBarHeight(){
+		Class c = null;
+		Object obj = null;
+		Field field = null;
+		int x = 0;
+		try
+		{
+		    c = Class.forName("com.android.internal.R$dimen");
+		}
+		catch (ClassNotFoundException e)
+		{
+			throwException("ClassNotFoundException",e);
+		}
+		try
+		{
+			obj = c.newInstance();
+		}
+		catch (IllegalAccessException e)
+		{
+			throwException("IllegalAccessException",e);
+		}
+		catch (InstantiationException e)
+		{
+			throwException("InstantiationException",e);
+		}
+		try
+		{
+			field = c.getField("status_bar_height");
+		}
+		catch (NoSuchFieldException e)
+		{
+			throwException("NoSuchFieldException",e);
+		}
+		try
+		{
+			x = Integer.parseInt(field.get(obj).toString());
+		}
+		catch (IllegalAccessException e)
+		{
+			throwException("IllegalAccessException",e);
+		}
+		catch (IllegalArgumentException e)
+		{
+			throwException("IllegalArgumentException",e);
+		}
+		float y = _context.getResources().getDimension(x);
+		return Utils.px2dp(_context,y);
 	}
 	@JavascriptInterface
 	public void clearCaches()
@@ -182,6 +244,50 @@ public class JsBridge
     public void clearWebStorage()
 	{
         clearWebStorages();
+	}
+	@JavascriptInterface
+	public void fullScreen(){
+		run(new Runnable(){
+				@Override
+				public void run()
+				{
+					Utils.transparentStatusBar(_activity.getWindow());
+					Utils.hideStatusBar(_activity);
+					Utils.hideNavBar(_activity);
+				}
+		});
+	}
+	@JavascriptInterface
+	public void exitFullScreen(){
+		run(new Runnable(){
+				@Override
+				public void run()
+				{
+					Utils.backStatusBar(_activity.getWindow());
+					Utils.showStatusBar(_activity);
+					Utils.showNavBar(_activity);
+				}
+			});
+	}
+	@JavascriptInterface
+	public void landscape(){
+		_activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+	}
+	@JavascriptInterface
+	public void portrait(){
+		_activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+	}
+	@JavascriptInterface
+	public boolean isLandscape(){
+		if(_activity.getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE){
+			return true;
+		}
+		return false;
+	}
+	@JavascriptInterface
+	public void jumpUrl(String url){
+		Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+		_context.startActivity(intent);
 	}
 	//设置
 	@JavascriptInterface

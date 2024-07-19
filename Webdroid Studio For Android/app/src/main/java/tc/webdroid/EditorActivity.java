@@ -20,6 +20,7 @@ public class EditorActivity extends Activity {
     private static Activity mc;
 	private WebView wv;
 	private long exitTime = 0;
+	private tc.webdroid.template.JsBridge jsb2;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +42,7 @@ public class EditorActivity extends Activity {
 		MainActivity.JsBridge jsb=new MainActivity.JsBridge();
 		jsb.setAttr(this,this,wv);
 		wv.addJavascriptInterface(jsb,"wds");
-		tc.webdroid.template.JsBridge jsb2=new tc.webdroid.template.JsBridge();
+		jsb2=new tc.webdroid.template.JsBridge();
 		jsb2.setAttr(this,this,wv);
 		wv.addJavascriptInterface(jsb2,"wd");
 		WebSettings settings = wv.getSettings();
@@ -79,10 +80,10 @@ public class EditorActivity extends Activity {
 		int currentNightMode = newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
 		switch (currentNightMode) {
 			case Configuration.UI_MODE_NIGHT_YES:
-				wv.evaluateJavascript("javascript:"+JsBridge.darkChangeCalklback+"(true)",null);
+				wv.evaluateJavascript("javascript:"+jsb2.darkChangeCalklback+"(true)",null);
 				break;
 			case Configuration.UI_MODE_NIGHT_NO:
-				wv.evaluateJavascript("javascript:"+JsBridge.darkChangeCalklback+"(false)",null);
+				wv.evaluateJavascript("javascript:"+jsb2.darkChangeCalklback+"(false)",null);
 				break;
 			case Configuration.UI_MODE_NIGHT_UNDEFINED:
 				break;

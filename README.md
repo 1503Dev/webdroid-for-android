@@ -1,5 +1,5 @@
 # Webdroid Studio For Android
-![JSAPI version](https://img.shields.io/badge/JSAPI-7-blue)
+![JSAPI version](https://img.shields.io/badge/JSAPI-8-blue)
 
 简体中文
 
@@ -21,7 +21,8 @@ ProjectName/
   html/
     index.html
     script.js
-    style.css
+    lib/
+      jq.js
     ...
 ```
 **WebdroidManifest.json结构**
