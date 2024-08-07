@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<script>
+    //window.location.replace('editor.html?project=wds')
+    function getChromeVersion() {
+        var userAgent = navigator.userAgent;
+        var match = userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+        if (match !== null) {
+            return parseInt(match[2], 10);
+        } else {
+            return null;
+        }
+    }
+    let wv_pkg="com.google.android.webview"
+    if(!wd.isInstalled(wv_pkg)) wv_pkg="com.android.webview"
+    let wv=wd.getAppName(wv_pkg)
+    const ver=getChromeVersion()
+    if(ver==null) ver=parseInt(wd.getVersionName("com.google.android.webview").split(".")[0])
+    if(ver==""||!ver) ver=0
+    if(ver<86){
+        wd.alert("警告","你的"+wv+"版本("+ver+")过低(<86)，请更新"+wv,false)
+        wds.putString('index_url','file:///android_asset/local_html/index-md.html')
+        wd.toastLong('重启以启用兼容性UI')
+        setTimeout(function(){
+            wd.finishAndRemoveTask()
+        },3000)
+    } else if(ver<99&&localStorage.getItem('first-launch')!="1"){
+        wd.alert("提示","你的"+wv+"版本("+ver+")<99，可能存在弹窗错位等问题",false)
+        localStorage.setItem("first-launch","1")
+    }
+</script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" />
+    <meta name="renderer" content="webkit" />
+    <link rel="stylesheet" href="mdui/mdui.min.css">
+    <link rel="stylesheet" href="mdui/icon.css">
+    <script src="mdui/mdui.min.js"></script>
+    <script>
+        mdui.setColorScheme('#FF009688');
+    </script>
+    <script src="jq.js"></script>
+    <style>
+        .nav:not(#nav-1) {
+            display: none;
+        }
+
+        .nav {
+            padding: 16px;
+            padding-top: 32px;
+        }
+        
+        mdui-fab{
+            position:fixed;
+            bottom:108px;
+        }
+        
+        [fab-add],
+        [fab-run]{
+            right:32px;
+        }
+        
+        [fab-reload],
+        [fab-pack]{
+            right:96px;
+        }
+        
+        [fab-save]{
+            right:160px;
+        }
+        
+        [fab-code]{
+            right:224px;
+        }
+        
+        [fab-delete]{
+            right:288px;
+            background:rgb(224,0,0);
+            color:white;
+        }
+        
+        mdui-list-item *{
+            background:Transparent;
+        }
+        
+        .about_app_ic{
+            background:#3074DA;
+            width:72px;
+            height:72px;
+            border-radius:8px;
+        }
+        
+        .about_app_ic>mdui-icon{
+            color:white;
+            --s:48px;
+            font-size:var(--s);
+            margin-top:14px;
+        }
+        
+        *{
+            user-select:none;
+        }
+        
+        a{
+            color:black;
+            -webkit-tap-highlight-color: transparent;
+            tap-highlight-color: transparent;
+        }
+        
+        .template_selector .line{
+            width:100%;
+            display: block;
+        }
+        
+        .line~.line{
+            margin-top: 4px;
+        }
+        
+        .line .template{
+            width:32%;
+            overflow: auto;
+            display: inline-block;
+            box-sizing: border-box;
+        }
+        
+        .template img{
+            width:100%;
+        }
+        
+        .template div{
+            width: 100%;
+            text-align: center;
+            font-size: 85%;
+        }
+        
+        .template[selected]{
+            border: 2px #009688 solid;
+        }
+        
+        .template[disabled] img,
+        .template[disabled] div{
+            opacity: 0.2;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="nav-1" class="nav mdui-prose">
+        <h1>项目</h1>
+        
+        <mdui-list id="project_list" style="display:none">
+            <mdui-list-item rounded onclick="edit('{{ pack_name }}')">{{ project_name }}<mdui-avatar slot="icon" src="{{ img }}"></mdui-avatar>
+            </mdui-list-item>
+        </mdui-list>
+        
+        <mdui-fab icon="add" fab-add onclick="newProject()"></mdui-fab>
+        <mdui-fab icon="refresh" fab-reload onclick="loadProjects()"></mdui-fab>
+    </div>
+    <div id="nav-2" class="nav mdui-prose">
+        <h1>编辑</h1>
+        
+        <mdui-chip icon="warning_amber" style="width:100%;" show="no-editing-project" onclick='document.querySelector("mdui-navigation-bar-item[value=\"1\"]").click()'>请先选择一个项目</mdui-chip>
+        
+        <div id="editor" style="display:none;" show="has-editing-project">
+            <mdui-text-field variant="outlined" label="应用名" id="app_name" value="{{ app_name }}"></mdui-text-field>
+            <br><br>
+            <mdui-text-field variant="outlined" label="版本名" id="version_name" value="{{ version_name }}"></mdui-text-field>
+            <br><br>
+            <mdui-text-field variant="outlined" label="版本号" id="editor_version_code" type="number" value="{{ version_code }}"></mdui-text-field>
+            
+            <mdui-fab icon="play_arrow" fab-run onclick="run()"></mdui-fab>
+            <mdui-fab icon="archive" fab-pack onclick="pack()"></mdui-fab>
+            <mdui-fab icon="save" fab-save onclick="save()"></mdui-fab>
+            <mdui-fab icon="code" fab-code onclick="wds.code(editing_project,false)"></mdui-fab>
+            <mdui-fab icon="delete" fab-delete onclick="del(editing_project)"></mdui-fab>
+        </div>
+    </div>
+    <div id="nav-3" class="nav mdui-prose">
+        <h1>设置</h1>
+        
+        <mdui-list>
+            <mdui-list-item rounded onclick="wd.requestPermission('android.permission.WRITE_EXTERNAL_STORAGE');wd.requestPermission('android.permission.MANAGE_EXTERNAL_STORAGE')" icon="perm_device_information">请求权限</mdui-list-item>
+            <mdui-list-item rounded onclick="enable_md()" icon="view_carousel">启用兼容性UI(Material Design)</mdui-list-item>
+            <mdui-list-item rounded onclick="dialog_about.open=true" icon="info">关于</mdui-list-item>
+            <mdui-list-item rounded onclick="dev_options()" icon="logo_dev">开发人员选项</mdui-list-item>
+        </mdui-list>
+    </div>
+
+    <mdui-navigation-bar value="1" label-visibility="selected">
+        <mdui-navigation-bar-item icon="list_alt--outlined" active-icon="list_alt--two-tone" value="1" href="javascript:switchNav(1)">项目</mdui-navigation-bar-item>
+        <mdui-navigation-bar-item icon="edit--outlined" active-icon="edit" value="2" href="javascript:switchNav(2)">编辑</mdui-navigation-bar-item>
+        <mdui-navigation-bar-item icon="settings--outlined" active-icon="settings--filled" value="3" href="javascript:switchNav(3)">设置</mdui-navigation-bar-item>
+    </mdui-navigation-bar>
+    
+    <mdui-dialog
+        id="dialog_about"
+        close-on-overlay-click
+        close-on-esc>
+        <center>
+            <div class="about_app_ic">
+                <mdui-icon name="code"></mdui-icon>
+            </div>
+            <b>&nbsp;</b><br>
+            <b style="font-size:125%">Webdroid Studio</b><br>
+            <b>for Android</b><br>
+            <pre style="text-align:left">    VERSION <script>document.write(wd.getVersionName())</script>
+      JSAPI <script>document.write(wd.getVersion())</script>
+SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webdroid-for-android/')">GITHUB</a>
+    LECENSE GPLv3
+        OSS <a href="javascript:Dedroid.jumpUrl('https://github.com/TheChuan1503/DedroidUtil/')">DedroidUtil</a>
+            <a href="javascript:Dedroid.jumpUrl('https://github.com/AbdurazaaqMohammed/AXML-Editor/')">AXML-Editor</a></pre>
+            
+        </center>
+    </mdui-dialog>
+    
+    <mdui-dialog
+        id="dialog_create"
+        close-on-overlay-click
+        close-on-esc
+        fullscreen
+        headline="创建模板">
+        
+        <div class="template_selector" id="template_selector">
+            <div class="line">
+                <div class="template" name='0'>
+                    <img src="src/img/template_no_activity.png">
+                    <div>无内容</div>
+                </div>
+                <div class="template" name='1'>
+                    <img src="src/img/template_default_contents_activity.png">
+                    <div>JSAPI 演示</div>
+                </div>
+                <div selected class="template" name='2'>
+                    <img src="src/img/template_empty_activity.png">
+                    <div>空项目</div>
+                </div>
+            </div>
+            <div class="line">
+                <div class="template" name='3'>
+                    <img src="src/img/template_basic_activity.png">
+                    <div>基本项目</div>
+                </div>
+                <div class="template" name='4'>
+                    <img src="src/img/template_blank_activity_drawer.png">
+                    <div>侧滑栏</div>
+                </div>
+                <div class="template" name='5'>
+                    <img src="src/img/template_bottom_navigation_activity.png">
+                    <div>底部导航栏</div>
+                </div>
+            </div>
+            <div class="line">
+                <div class="template" name='6'>
+                    <img src="src/img/template_blank_activity_tabs.png">
+                    <div>选项卡</div>
+                </div>
+                <div class="template" disabled name='7'>
+                    <img src="src/img/template_bootstrap.png">
+                    <div>Bootstrap</div>
+                </div>
+                <div class="template" disabled name='8'>
+                    <img src="src/img/template_vue.png">
+                    <div>Vue</div>
+                </div>
+            </div>
+        </div>
+        
+        <mdui-radio-group id="material" value="false">
+            <mdui-radio value="false">Material Design</mdui-radio>
+            <mdui-radio value="true">Material You</mdui-radio>
+        </mdui-radio-group>
+        <br>
+            <mdui-checkbox id="isTransparent" value="transparent" disabled>背景透明</mdui-checkbox>
+        <br>
+        <span>Material You 需要 WebView 版本大于 86 才能运行</span>
+        
+        <mdui-button slot="action" variant="text" onclick="dialog_create.open=false">取消</mdui-button>
+        <mdui-button
+            slot="action"
+            variant="text"
+            onclick="dialog_create.open=false;wds.create(
+                parseInt(document.querySelector('.template[selected]').getAttribute('name')),
+                parseBool(material.value)
+                )">
+            创建
+        </mdui-button>
+    </mdui-dialog>
+    
+    <script>
+        if(wd.isDarkMode()){
+            $('body').addClass("mdui-theme-dark")
+        }
+        wd.regDarkModeChangeEvent('onDarkChange')
+        onDarkChange=function(s){
+            if(s){
+                $('body').addClass("mdui-theme-dark")
+            } else {
+                $('body').removeClass("mdui-theme-dark")
+            }
+        }
+        if (!("wds" in window)) {
+            wds = {
+                listProject: function() {
+                    return '["wds"]'
+                },
+                getProjectDir:function(n){
+                    return "http://localhost:8000/1503Dev/WebProjects/"+n+"/"
+                },
+                create: function(a,b){
+                    wd.toast(""+a+""+b)
+                }
+            }
+        }
+        
+        function parseBool(str){
+            if(str===true) return true
+            if(str===false) return false
+            if(str.toLowerCase()=="true") return true
+            return false
+        }
+        
+        function getUpdate(r,c){
+            if(r!==void 0){
+                if(r===false){
+                    return
+                }
+                r=decode(r).replace(/\+/g,' ')
+                let data=JSON.parse(r)
+                if (wd.getVersionCode()<data.version_code){
+                    mdui.confirm({
+                        headline:'有新版本',
+                        description:data.version_name,
+                        closeOnOverlayClick:true,
+                        confirmText:'更新',
+                        onConfirm:function(){
+                            Dedroid.jumpUrl(data.update_url)
+                        }
+                    })
+                }
+                return
+            }
+            wd.httpGet(
+                'https://verc.1503dev.top/api/lasted/?app=Webdroid_Studio_Android',
+                'getUpdate',
+                0)
+        }
+        
+        function encode(s){
+            return encodeURIComponent(s)
+        }
+        
+        function decode(s){
+            return decodeURIComponent(s)
+        }
+        
+        getUpdate()
+        
+        now_nav=1
+
+        function switchNav(id) {
+            if(id==now_nav) return
+            now_nav=id
+            let fadeTime = 100
+            document.querySelectorAll(".nav").forEach(function(e) {
+                $("#" + e.id).fadeOut(fadeTime)
+            })
+            setTimeout(function() {
+                $("#nav-" + id).fadeIn(fadeTime)
+            }, fadeTime)
+        }
+        
+        project_list_def=project_list.innerHTML
+        function loadProjects(){
+            project_list.innerHTML=""
+            let h=""
+            projects=JSON.parse(wds.listProject())
+            projects.forEach(function(e){
+                h=h+project_list_def.replace("{{ project_name }}",e)
+                    .replace("{{ img }}",wds.getProjectDir(e)+"icon.png")
+                    .replace("{{ pack_name }}",encode(e))
+            })
+            project_list.innerHTML=h
+            project_list.style.display="block"
+            
+        }
+        editing_project=""
+        editor_def=editor.innerHTML
+        function _edit(n){
+            editor.innerHTML=""
+            let info=JSON.parse(wds.getProjectInfo(n))
+            editor.innerHTML=editor_def.replace("{{ app_name }}",info.app_name)
+                .replace("{{ version_name }}",info.version_name)
+                .replace("{{ version_code }}",info.version_code)
+        }
+        function edit(n){
+            n=decode(n)
+            editing_project=n
+            $('[show="no-editing-project"]').attr("style","display:none")
+            $('[show="has-editing-project"]').attr("style","display:block")
+            _edit(n)
+            document.querySelector("mdui-navigation-bar-item[value=\"2\"]").click()
+        }
+        function gv(e){
+            return document.querySelector("#"+e).getAttribute("value")
+        }
+        function save(){
+            wds.save(editing_project,app_name.value,version_name.value,parseInt(editor_version_code.value))
+        }
+        function pack(){
+            n=editing_project
+            mdui.confirm({
+                description:"是否打包"+n,
+                confirmText:"是",
+                closeOnOverlayClick:true,
+                onConfirm:function(){
+                    wds.pack(n)
+                }
+            })
+        }
+        function run(){
+            wds.run(editing_project)
+        }
+        function dev_options(){
+            mdui.confirm({
+                headline:"警告",
+                description:"开发人员选项含有不稳定的内容，如果出错，请清除Webdroid Studio的数据，是否继续前往",
+                confirmText:"是",
+                closeOnOverlayClick:true,
+                onConfirm:function(){
+                    mdui.prompt({
+                        description: "输入调试码和调试内容",
+                        confirmText: "OK",
+                        cancelText: "Cancel",
+                        onConfirm: function(v){
+                            if(v.substring(0,8)=="wdsdevjs"){
+                                eval(v.substring(9))
+                            }
+                        }
+                    });
+                }
+            })
+        }
+        function enable_md(){
+            wds.setMyEnable(false)
+            wds.putString('index_url',"file:///android_asset/local_html/index-md.html")
+            wd.toast('请重启应用')
+        }
+        function del(p){
+            mdui.setColorScheme('#554844');
+            mdui.confirm({
+                description:'确定删除'+p+'?',
+                closeOnOverlayClick:true,
+                onClose:function(){
+                    mdui.setColorScheme('#FF009688');
+                },
+                onConfirm:function(){
+                    mdui.confirm({
+                        headline:'最后一次询问',
+                        closeOnOverlayClick:true,
+                        description:'执意要删除'+p+'吗?',
+                        onOpen:function(d){
+                            mdui.setColorScheme('#FF0000');
+                            d.style.background="rgba(44,0,0,0.6)"
+                        },
+                        onClosed:function(){
+                            mdui.setColorScheme('#FF009688');
+                        },
+                        onConfirm:function(){
+                            $('[show="no-editing-project"]').attr("style","display:block")
+                            $('[show="has-editing-project"]').attr("style","display:none")
+                            wds.del(p)
+                        }
+                    })
+                    
+                }
+            })
+        }
+        function newProject(){
+            dialog_create.open=true
+        }
+        document.querySelectorAll('.template:not([disabled])').forEach(function(i){
+            i.addEventListener('click',function(e){
+                document.querySelectorAll('.template').forEach(function(i){
+                    i.removeAttribute('selected')
+                })
+                i.setAttribute('selected',true)
+            })
+        })
+        setInterval(function(){
+            if(projects!=JSON.parse(wds.listProject())){
+                loadProjects()
+            }
+        },1000)
+        loadProjects()
+    </script>
+</body>
+
+</html>

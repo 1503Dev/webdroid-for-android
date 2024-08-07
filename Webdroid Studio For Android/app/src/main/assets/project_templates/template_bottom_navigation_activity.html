@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="lib/mdui-1/css/mdui.min.css">
+    <script src="lib/jq.js"></script>
+    <style>
+        * {
+            user-select: none;
+        }
+        .nav:not(#nav-1) {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="mdui-theme-primary-teal mdui-theme-accent-orange mdui-appbar-with-toolbar mdui-bottom-nav-fixed">
+    <div class="mdui-appbar mdui-appbar-fixed">
+        <div class="mdui-toolbar mdui-color-theme">
+            <a class="mdui-typo-title">
+                <script>document.write(wd.getAppName())</script>
+            </a>
+        </div>
+    </div>
+    
+    <div class="mdui-container" style="padding: 8px 0px 8px;">
+        <div id="nav-1" class="nav">
+            Page 1
+            <!-- Your code here -->
+        </div>
+        <div id="nav-2" class="nav">
+            Page 2
+            <!-- Your code here -->
+        </div>
+        <div id="nav-3" class="nav">
+            Page 3
+            <!-- Your code here -->
+        </div>
+    </div>
+    
+    <div class="mdui-bottom-nav mdui-color-theme">
+        <a onclick="nav(1)" class="mdui-ripple mdui-bottom-nav-active">
+            <i class="mdui-icon material-icons">history</i>
+            <label>nav-1</label>
+        </a>
+        <a onclick="nav(2)" class="mdui-ripple">
+            <i class="mdui-icon material-icons">favorite</i>
+            <label>nav-2</label>
+        </a>
+        <a onclick="nav(3)" class="mdui-ripple">
+            <i class="mdui-icon material-icons">location_on</i>
+            <label>nav-3</label>
+        </a>
+    </div>
+
+    <script src="lib/mdui-1/js/mdui.min.js"></script>
+    <script>
+        function initDarkMode(){
+            if(wd.isDarkMode()){
+                $('body').addClass('mdui-theme-layout-dark')
+            } else {
+                $('body').removeClass('mdui-theme-layout-dark')
+            }
+        }
+        initDarkMode()
+        wd.regDarkModeChangeEvent('initDarkMode')
+        function nav(id){
+            document.querySelectorAll('.nav').forEach(function(e){
+                e.style.display="none"
+            })
+            document.getElementById('nav-'+id).style.display="block"
+        }
+    </script>
+</body>
+
+</html>

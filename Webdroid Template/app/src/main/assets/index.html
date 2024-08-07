@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
+    <meta name="renderer" content="webkit">
+</head>
+
+<body>
+    <h1>Webdroid Studio</h1>
+    <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webdroid-for-android/')">文档 | DOCS</a>
+    <h3>基本</h3>
+    <button onclick="ts(wd.getVersion())">getVersion</button>
+    <button onclick="wd.toast('短时提示')">toast</button>
+    <button onclick="wd.toastLong('长时提示')">toastLong</button>
+    <button onclick="wd.alert('无标题，可取消')">alert</button>
+    <button onclick="wd.alert('有标题，可取消','有标题，可取消',true)">alert</button>
+    <button onclick="wd.alert('你好','有标题，不可取消',false)">alert</button>
+    <button onclick="ts(wd.getAssetsUrl())">getAssetsUrl</button>
+    <button onclick="ts(wd.getStorageUrl())">getStorageUrl</button>
+    <button onclick="wd.setStatusBarColor(26,35,126)">setStatusBarColor</button>
+    <button onclick="ts(wd.getStatusBarHeight()+'')">getStatusBarHeight</button>
+    <button onclick="ts(wd.clearCache(),'清除缓存')">clearCache</button>
+    <button onclick="ts(wd.clearCookie(),'清除Cookie')">clearCookie</button>
+    <button onclick="ts(wd.clearWebStorage(),'清除WebStorage')">clearWebStorage</button>
+    <button onclick="wd.fullScreen()">fullScreen</button>
+    <button onclick="wd.exitFullScreen()">exitFullScreen</button>
+    <button onclick="wd.landscape()">landscape</button>
+    <button onclick="wd.portrait()">portrait</button>
+    <button onclick="ts(wd.isLandscape()+'')">isLandscape</button>
+    <button onclick="wd.jumpUrl('http://1503dev.top')">jumpUrl</button>
+    <h3>设置</h3>
+    <button onclick="test()">test</button>
+    <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webdroid-for-android/blob/main/JSAPI.md')">详情: JSAPI</a>
+    <h3>文件</h3>
+    <button onclick="ts(wd.getStoragePath())">getStoragePath</button>
+    <button onclick="ts(wd.isFileExists(wd.getStoragePath()+'/1503Dev'))">isFileExists</button>
+    <button onclick="ts(wd.listFile(wd.getStoragePath()+'/1503Dev/WebProjects'))">listFile</button>
+    <button onclick="ts(wd.isDir(wd.getStoragePath()+'/1503Dev/WebProjects'))">isDir</button>
+    <button onclick="wd.openFile('/storage/emulated/0/1503Dev/WebProjects/Webdroid Template/html/index.html')">openFile</button>
+    <button onclick="ts(wd.readFile(wd.getStoragePath()+'/.tcookieid'))">readFile</button>
+    <button onclick="ts(wd.writeString(wd.getStoragePath()+'/1503Dev/testfile.txt','writeString'),'/1503Dev/testfile.txt')">writeString</button>
+    <h3>软件包</h3>
+    <button onclick="ts(wd.getPackageName())">getPackageName</button>
+    <button onclick="ts(wd.getAppName())">getAppName</button>
+    <button onclick="ts(wd.getVersionName())">getVersionName</button>
+    <button onclick="ts(wd.getVersionCode())">getVersionCode</button>
+    <button onclick="ts(wd.isInstalled('com.miHoYo.Yuanshen'),'原神是否安装')">isInstalled</button>
+    <button onclick="ts(wd.appSettings(wd.getPackageName()))">appSettings</button>
+    <h3>配置</h3>
+    <button onclick="ts(wd.putString('test','测试数据'))">putString</button>
+    <button onclick="ts(wd.putString('test','测试数据2'))">putString</button>
+    <button onclick="ts(wd.getString('test'))">getString</button>
+    <button onclick="ts(wd.getInt('test2'))">put(get)Int</button>
+    <button onclick="ts(wd.getFloat('test2'))">put(get)Float</button>
+    <button onclick="ts(wd.getLong('test2'))">put(get)Long</button>
+    <button onclick="ts(wd.getBoolean('test2'))">put(get)Boolean</button>
+    <button onclick="ts(wd.isSpExists('test'))">isSpExists</button>
+    <h3>系统</h3>
+    <button onclick="wd.finish()">finish</button>
+    <button onclick="wd.finishAndRemoveTask()">finishAndRemoveTask</button>
+    <button onclick="wd.exit()">exit</button>
+    <button onclick="ts(wd.startActivity(wd.getPackageName()))">startActivity</button>
+    <button onclick="ts(wd.startActivity(wd.getPackageName(),'tc.webdroid.MainActivity'))">startActivity</button>
+    <button onclick="wd.requestPermission('android.permission.WRITE_EXTERNAL_STORAGE')">requestPermission</button>
+    <button onclick="ts(wd.hasPermission('android.permission.WRITE_EXTERNAL_STORAGE'),'是否拥有储存权限')">hasPermission</button>
+    <button onclick="ts(wd.isVpnConnected())">isVpnConnected (实验)</button>
+    <button onclick="ts(wd.isDarkMode(),'是否为夜间模式')">isDarkMode</button>
+    <button onclick="ts(wd.regDarkModeChangeEvent('ts'),'试试开关夜间模式')">regDarkModeChangeEvent</button>
+    <button onclick="ts(wd.getSdk()+'')">getSdk</button>
+    <h3>意图</h3>
+    <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webdroid-for-android/blob/main/JSAPI.md')">详情: JSAPI</a>
+    <h3>网络</h3>
+    <button onclick="ts(wd.isNetworkAvailable())">isNetworkAvailable</button>
+    <button onclick="this.setAttribute('disabled',true);ts(wd.regNetworkChangeEvent('ts'),'试试开关网络')">regNetworkChangeEvent</button>
+    <button onclick="wd.httpGet('https://pages.1503dev.top/test/','onHttpCallback',0)">httpGet</button>
+    <button onclick="wd.httpPost('https://verc.1503dev.top/?httpTest','data=abc&test=webdroid','onHttpCallback',0)">httpPost</button>
+    <h3>更多</h3>
+    <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webdroid-for-android/')">文档 | DOCS</a>
+
+    <script>
+        onException=function(t,r){
+            r=decodeURIComponent(r).replace(/\+/g,' ')
+            wd.alert('出错了: '+t,r)
+        }
+        onHttpCallback=function(r,c,s){
+            wd.alert(r+'\n'+c+'\n'+s)
+        }
+        function ts(str,t="返回结果"){
+            wd.alert(t,str,true)
+        }
+        function test(){
+            wd.alert("orginal",wd.getIndexUrl())
+            wd.setIndexUrl(`data:text/html,
+<button onclick="wd.setIndexUrl('file:///android_asset/index.html');wd.toast('Please restart')">恢复</button>`)
+            wd.toast("Please restart")
+        }
+    </script>
+</body>
+
+</html>

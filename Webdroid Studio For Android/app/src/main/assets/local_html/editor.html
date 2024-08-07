@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<script>
+    function getChromeVersion() {
+        var userAgent = navigator.userAgent;
+        var match = userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+        if (match !== null) {
+            return parseInt(match[2], 10);
+        } else {
+            return null;
+        }
+    }
+    ver=getChromeVersion()
+    if(ver<86){
+        wds.setMyEnable(false)
+        wd.toast('请重启编辑器')
+        wd.finishAndRemoveTask()
+    }
+</script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" />
+    <meta name="renderer" content="webkit" />
+    <link rel="stylesheet" href="mdui/mdui.min.css">
+    <link rel="stylesheet" href="mdui/icon.css">
+    <script src="mdui/mdui.min.js"></script>
+    <script>
+        mdui.setColorScheme('#FF009688');
+    </script>
+    <script src="jq.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+    <style>
+        mdui-list-item *{
+            background:transparent;
+        }
+        
+        *{
+            user-select:none;
+        }
+        
+        body{
+            padding:0px;
+            margin:0px;
+        }
+        
+        #editorView{
+            width:100%;
+            height:calc(100vh - 64px - 16px);
+        }
+        
+        .bar_top{
+            height:16px;
+            box-sizing:border-box;
+            padding:2px;
+            font:12px monospace;
+        }
+        #puncBar{
+            position: fixed;
+            left: 0px;
+            bottom: 0px;
+            width: 100%;
+            z-index: 10;
+        }
+        #puncBar .header{
+            width: 100%;
+            height: 32px;
+        }
+        #puncBar .header .close-btn{
+            position: absolute;
+            right: 4px;
+            top: 0px;
+            z-index: 11;
+        }
+        #puncBar .body{
+            background: gray;
+            box-shadow: 0px 0px 5px rgba(0,0,0,0.4);
+            z-index: 15;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const project = urlParams.get('project');
+        if(!project||project=="") window.location.replace("?project=wds")
+    </script>
+    <div id="inner">
+        <mdui-top-app-bar style="position: relative;box-shadow: 0px 1px 5px rgba(0,0,0,0.1);">
+            <mdui-button-icon icon="menu" onclick="dra_files.open = !dra_files.open"></mdui-button-icon>
+            <mdui-top-app-bar-title>
+                <script>
+                    document.write(project)
+                </script>
+            </mdui-top-app-bar-title>
+            <div style="flex-grow: 1"></div>
+            <mdui-button-icon -style="display:none;" icon="exit_to_app" onclick="exit()"></mdui-button-icon>
+            <mdui-dropdown>
+                <mdui-button-icon icon="settings" slot="trigger"></mdui-button-icon>
+                <mdui-menu style="padding:6px 8px 6px 8px">
+                    <span>&nbsp;&nbsp;字体大小</span>
+                    <mdui-slider tickmarks id="text_size" min="2" max="20" style="width:188px"></mdui-slider>
+                </mdui-menu>
+            </mdui-dropdown>
+            <mdui-button-icon icon="undo" onclick="undo()"></mdui-button-icon>
+            <mdui-button-icon icon="redo" onclick="redo()"></mdui-button-icon>
+            <mdui-button-icon icon="save" onclick="editor.focus();save();toast('保存成功')"></mdui-button-icon>
+            <mdui-button-icon icon="play_arrow" onclick="save();wds.runFile(project,file)"></mdui-button-icon>
+        </mdui-top-app-bar>
+        <div class="bar_top">
+            <div id="label_file"></div>
+        </div>
+        <div id="editorView"></div>
+        <div id="puncBar">
+            <div class="header">
+                <mdui-button-icon onclick="toggleSymbolPanel()" icon="swap_vert" class="close-btn"></mdui-button-icon>
+            </div>
+            <div class="body">
+                <mdui-chip>&lt;</mdui-chip>
+                <mdui-chip>&gt;</mdui-chip>
+                <mdui-chip>{</mdui-chip>
+                <mdui-chip>}</mdui-chip>
+                <mdui-chip>[</mdui-chip>
+                <mdui-chip>]</mdui-chip>
+                <mdui-chip>(</mdui-chip>
+                <mdui-chip>)</mdui-chip>
+                <mdui-chip>:</mdui-chip>
+                <mdui-chip>;</mdui-chip>
+                <mdui-chip>$</mdui-chip>
+                <mdui-chip>'</mdui-chip>
+                <mdui-chip>"</mdui-chip>
+                <mdui-chip>=</mdui-chip>
+                <mdui-chip>?</mdui-chip>
+                <mdui-chip>#</mdui-chip>
+                <mdui-chip>!</mdui-chip>
+                <mdui-chip>/</mdui-chip>
+                <mdui-chip>\</mdui-chip>
+                <mdui-chip>_</mdui-chip>
+            </div>
+        </div>
+    </div>
+    
+    <mdui-navigation-drawer close-on-overlay-click id="dra_files" open="false">
+        <mdui-button full-width onclick="path='html';go('/')" style="margin:8px">回到项目</mdui-button>
+        <mdui-button full-width onclick="go('..')" style="margin:8px">返回上一级</mdui-button>
+        <mdui-list style="margin:8px" id="file_list">
+            <mdui-list-item disable icon="{{ icon }}" rounded onclick="go('{{ file_ec }}')">{{ file }}</mdui-list-item>
+        </mdui-list>
+    </mdui-navigation-drawer>
+
+    
+    <script>
+        if(!("wds" in window)){
+            wds={
+                getString:function(){
+                    return ''
+                },
+                putString:function(){
+                    return
+                }
+            }
+        }
+        var root=wd.getStoragePath()+"/1503Dev/WebProjects/"+project+"/"
+        var path="html/"
+        var file="html/index.html"
+        var editor_theme="chrome"
+        if(wd.isDarkMode()){
+            document.body.setAttribute("class","mdui-theme-dark")
+            editor_theme="tomorrow_night"
+        }
+        function toggleSymbolPanel(){
+            editor.focus()
+            if(document.querySelector('#puncBar>.body').style.display=="none"){
+                editorView.style=`
+                    width:100%;;
+                    height:calc(100vh - 64px - 16px);
+                    position:relative;
+                    bottom:72px;
+                `
+            } else {
+                editorView.style=`
+                    width:100%;;
+                    height:calc(100vh - 64px - 16px);
+                    position:relative;
+                    bottom:0px;
+                `
+            }
+            
+            $('#puncBar>.body').slideToggle()
+        }
+        function toast(msg){
+            mdui.snackbar({
+                message:msg,
+                autoCloseDelay:1750
+            })
+        }
+        function listFile(dir){
+            let fp=root+dir
+            return JSON.parse(wd.listFile(fp))
+        }
+        function encode(s){
+            return encodeURIComponent(s)
+        }
+        function decode(s){
+            return decodeURIComponent(s)
+        }
+        function getFileIcon(f){
+            if(wd.isDir(f)) return 'folder'
+            let a=f.split('.')
+            switch(a[a.length-1].toLowerCase()){
+                case 'html':
+                case 'htm':
+                    return 'html'
+                case 'js':
+                    return 'javascript'
+                case 'css':
+                    return 'css'
+                case 'png':
+                case 'jpg':
+                case 'svg':
+                case 'gif':
+                    return 'image'
+                default:
+                    return 'insert_drive_file'
+            }
+        }
+        function fileDisabled(f){
+            if(wd.isDir(f)) return 'disabled'
+            return ''
+        }
+        file_list_def=file_list.innerHTML
+        function listf(){
+            file_list.innerHTML=""
+            let h=""
+            let files=listFile(path)
+            files.forEach(function(e){
+                h=h+file_list_def
+                    //.replace('disable',fileDisabled(root+path+"/"+e))
+                    .replace('{{ file }}',e)
+                    .replace('{{ file_ec }}',encode(e))
+                    .replace('{{ icon }}',getFileIcon(root+path+"/"+e))
+            })
+            file_list.innerHTML=h
+        }
+        function initFiles(){
+            listf()
+        }
+        initFiles()
+        function go(f){
+            f=decode(f)
+            if(wd.isDir(root+path+f)){
+                path=path+f+"/"
+                listf()
+                return
+            }
+            loadContent(path+f)
+            dra_files.open=false
+        }
+        function save(f=file){
+            let fp=wd.getStoragePath()+"/1503Dev/WebProjects/"+project+"/"+f
+            let c=Dedroid.writeFile(fp,editor.getSession().getValue())
+        }
+        function undo(){
+            editor.focus()
+            if(editor.getSession().getUndoManager().canUndo()){
+                editor.undo()
+            } else toast("不可撤销")
+        }
+        function redo(){
+            editor.focus()
+            if(editor.getSession().getUndoManager().canRedo()){
+                editor.redo()
+            } else toast("不可重做")
+        }
+        function getType(f){
+            r1=f.substring(f.length-4).toLowerCase()
+            r2=f.substring(f.length-3).toLowerCase()
+            r3=f.substring(f.length-2).toLowerCase()
+            if(r1=="html") return "html"
+            if(r1=="json") return "json"
+            if(r2=="htm") return "html"
+            if(r2=="css") return "css"
+            if(r3=="js") return "javascript"
+            return f
+        }
+        function initEditor(){
+            let fs=wds.getString('editor_text_size')
+            if(fs=="") fs="14px"
+            text_size.value=fs.split('px')[0]
+            editor = ace.edit("editorView");
+            editor.setTheme("ace/theme/"+editor_theme);
+            ace.require("ace/ext/language_tools");
+            editor.session.setMode("ace/mode/html");
+            editor.setOptions({
+                enableBasicAutocompletion: true,
+                enableLiveAutocompletion: true,
+                fontSize: fs,
+                showPrintMargin: false,
+                enableSnippets: true
+            });
+        }
+        initEditor()
+        function loadContent(f=file){
+            let fp=wd.getStoragePath()+"/1503Dev/WebProjects/"+project+"/"+f
+            if((!wd.isFileExists(fp))||f=="/"||f==""||wd.isDir(fp)){
+                wd.toast(fp+"不存在")
+                return
+            }
+            editor.session.setMode("ace/mode/"+getType(f));
+            file=f
+            label_file.innerHTML=file.split('/')[file.split('/').length-1]
+            let c=Dedroid.readFile(fp)
+            editor.setValue(c)
+            editor.getSession().getSelection().clearSelection()
+            editor.moveCursorTo(0,0,false)
+        }
+        loadContent(file)
+        function exit(){
+            mdui.confirm({
+                description: "是否保存",
+                closeOnOverlayClick:true,
+                confirmText: "保存并退出",
+                cancelText: "退出",
+                onCancel:function(){
+                    wd.finish()
+                },
+                onConfirm: function(v){
+                    save()
+                    wd.finish()
+                }
+            })
+        }
+        text_size.addEventListener("change", function(){
+            wds.putString("editor_text_size",text_size.value+"px")
+            editor.setOptions({
+                fontSize: text_size.value+"px"
+            });
+        });
+        wd.regDarkModeChangeEvent('onDarkChange')
+        onDarkChange=function(s){
+            if(s){
+                document.body.setAttribute("class","mdui-theme-dark")
+                editor_theme="tomorrow_night"
+            } else {
+                document.body.setAttribute("class","")
+                editor_theme="chrome"
+            }
+            editor.setTheme("ace/theme/"+editor_theme);
+        }
+        document.querySelectorAll('#puncBar .body mdui-chip').forEach(function(e){
+            e.addEventListener('click',function(ev){
+                editor.focus()
+                let text=e.innerHTML
+                    .replace(/\&lt\;/g,'<')
+                    .replace(/\&gt\;/g,'>')
+                editor.getSession().insert(editor.getCursorPosition(),text)
+            })
+        })
+        
+    </script>
+</body>
+
+</html>

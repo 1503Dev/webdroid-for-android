@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" />
+    <meta name="renderer" content="webkit" />
+    <link rel="stylesheet" href="mdui-1/css/mdui.min.css">
+    <script src="jq.js"></script>
+    <script>
+        //window.location.replace('editor.html?project=wds')
+        function getChromeVersion() {
+            var userAgent = navigator.userAgent;
+            var match = userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+            if (match !== null) {
+                return parseInt(match[2], 10);
+            } else {
+                return null;
+            }
+        }
+    </script>
+
+    <style>
+        .nav:not(#nav-1) {
+            display: none;
+        }
+
+        .nav {
+            padding: 16px 48px 16px 16px;
+            padding-top: 0px;
+        }
+        
+        .mdui-fab{
+            position:fixed;
+            bottom:96px;
+        }
+        
+        .mdui-fab *{
+            color:white;
+        }
+        
+        [fab-add],
+        [fab-run]{
+            right:32px;
+        }
+        
+        [fab-reload],
+        [fab-pack]{
+            right:96px;
+        }
+        
+        [fab-save]{
+            right:160px;
+        }
+        
+        [fab-code]{
+            right:224px;
+        }
+        
+        [fab-delete]{
+            right:288px;
+        }
+        
+        .mdui-list-item .mdui-list-item-avatar,
+        .mdui-list-item img{
+            background:transparent;
+            border-radius:0px;
+        }
+        
+        .about_app_ic{
+            background:#3074DA;
+            width:72px;
+            height:72px;
+            border-radius:8px;
+        }
+        
+        .about_app_ic>i{
+            color:white;
+            --s:48px;
+            font-size:var(--s);
+            margin-top:14px;
+        }
+        
+        *{
+            user-select:none;
+        }
+        
+        a{
+            color:black;
+            -webkit-tap-highlight-color: transparent;
+            tap-highlight-color: transparent;
+        }
+        
+        [fearless],
+        [fearless] *{
+            overflow:visible;
+        }
+        
+        .mdui-typo-display-2{
+            margin:24px 0px 16px 16px;
+        }
+        
+        .template_selector .line{
+            width:100%;
+            display: block;
+            margin: 0px;
+            box-sizing: border-box;
+            padding: 0px;
+            overflow: hidden;
+        }
+        
+        .line~.line{
+            margin-top: 4px;
+        }
+        
+        .line .template{
+            overflow: visible;
+            display: inline-block;
+            box-sizing: border-box;
+        }
+        
+        .template img{
+            width:108%;
+        }
+        
+        .template div{
+            width: 100%;
+            text-align: center;
+            font-size: 85%;
+        }
+        
+        .template[selected]{
+            background: rgba(0,0,0,0.1);
+        }
+        
+        .template[disabled] img,
+        .template[disabled] div{
+            opacity: 0.2;
+        }
+        
+        #dialog_create{
+            padding: 0px;
+            overflow: auto;
+        }
+    </style>
+</head>
+
+<body class="mdui-theme-primary-teal mdui-theme-accent-orange mdui-bottom-nav-fixed">
+    <div id="nav-1" class="nav mdui-typo">
+        <div class="mdui-typo-display-2">项目</div>
+        
+        <ul class="mdui-list" id="project_list" style="display:none">
+            <li class="mdui-list-item mdui-ripple" onclick="edit('{{ pack_name }}')">
+                <div class="mdui-list-item-avatar">
+                    <img src="{{ img }}"/>
+                </div>
+                <div class="mdui-list-item-content">
+                    {{ project_name }}
+                </div>
+            </li>
+        </ul>
+        
+        <div class="mdui-fab mdui-color-theme-accent" fab-add mdui-dialog="{target: '#dialog_create'}">
+            <i class="mdui-icon material-icons">add</i>
+        </div>
+        <div class="mdui-fab mdui-color-theme-accent" fab-reload onclick="loadProjects()">
+            <i class="mdui-icon material-icons">refresh</i>
+        </div>
+    </div>
+    <div id="nav-2" class="nav mdui-typo">
+        <div class="mdui-typo-display-2">编辑</div>
+        
+        <div
+            class="mdui-chip"
+            show="no-editing-project"
+            onclick='document.querySelector("a[value=\"1\"]").click()'
+            style="width:100%;margin-left:16px">
+            <span class="mdui-chip-icon mdui-color-red">
+                <i class="mdui-icon material-icons">warning_amber</i>
+            </span>
+            <span class="mdui-chip-title">请先选择一个项目</span>
+        </div>
+        
+        <div id="editor" style="display:none" show="has-editing-project">
+            <div class="mdui-textfield" style="margin-left:32px" variant="outlined">
+                <label class="mdui-textfield-label">应用名</label>
+                <input class="mdui-textfield-input" id="app_name" value="{{ app_name }}"/>
+            </div>
+            <div class="mdui-textfield" style="margin-left:32px" variant="outlined">
+                <label class="mdui-textfield-label">版本名</label>
+                <input class="mdui-textfield-input" id="version_name" value="{{ version_name }}"/>
+            </div>
+            <div class="mdui-textfield" style="margin-left:32px" variant="outlined">
+                <label class="mdui-textfield-label">版本号</label>
+                <input class="mdui-textfield-input" id="editor_version_code" value="{{ version_code }}"/>
+            </div>
+            
+            <div class="mdui-fab mdui-color-theme-accent" fab-run onclick="run()">
+                <i class="mdui-icon material-icons">play_arrow</i>
+            </div>
+            <div class="mdui-fab mdui-color-theme-accent" fab-pack onclick="pack()">
+                <i class="mdui-icon material-icons">archive</i>
+            </div>
+            <div class="mdui-fab mdui-color-theme-accent" fab-save onclick="save()">
+                <i class="mdui-icon material-icons">save</i>
+            </div>
+            <div class="mdui-fab mdui-color-theme-accent" fab-code onclick="wds.code(editing_project,false)">
+                <i class="mdui-icon material-icons">code</i>
+            </div>
+            <div class="mdui-fab mdui-color-red" fab-delete onclick="del(editing_project)">
+                <i class="mdui-icon material-icons">delete</i>
+            </div>
+        </div>
+    </div>
+    <div id="nav-3" class="nav mdui-typo">
+        <div class="mdui-typo-display-2">设置</div>
+        
+        <ul class="mdui-list">
+            <li class="mdui-list-item mdui-ripple" onclick="wd.requestPermission('android.permission.WRITE_EXTERNAL_STORAGE');">
+                <i class="mdui-list-item-icon mdui-icon material-icons">perm_device_information</i>
+                <div class="mdui-list-item-content">
+                    请求权限
+                </div>
+            </li>
+            <li class="mdui-list-item mdui-ripple" onclick="enable_my()">
+                <i class="mdui-list-item-icon mdui-icon material-icons">streetview</i>
+                <div class="mdui-list-item-content">
+                    启用Material You
+                </div>
+            </li>
+            <li class="mdui-list-item mdui-ripple" mdui-dialog="{target: '#dialog_about'}">
+                <i class="mdui-list-item-icon mdui-icon material-icons">info</i>
+                <div class="mdui-list-item-content">
+                    关于
+                </div>
+            </li>
+            <li class="mdui-list-item mdui-ripple" onclick="dev_options()">
+                <i class="mdui-list-item-icon mdui-icon material-icons">developer_mode</i>
+                <div class="mdui-list-item-content">
+                    开发人员选项
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="mdui-bottom-nav mdui-color-theme">
+        <a onclick="switchNav(1)" value="1" class="mdui-ripple mdui-ripple-white mdui-bottom-nav-active">
+            <i class="mdui-icon material-icons">playlist_add_check</i>
+            <label>项目</label>
+        </a>
+        <a onclick="switchNav(2)" value="2" class="mdui-ripple mdui-ripple-white">
+            <i class="mdui-icon material-icons">edit</i>
+            <label>编辑</label>
+        </a>
+        <a onclick="switchNav(3)" class="mdui-ripple mdui-ripple-white">
+            <i class="mdui-icon material-icons">settings</i>
+            <label>设置</label>
+        </a>
+    </div>
+    
+    <div
+        class="mdui-dialog"
+        id="dialog_about">
+        <center style="margin:24px">
+            <div class="about_app_ic">
+                <i class="mdui-icon material-icons">code</i> 
+            </div>
+            <b>&nbsp;</b><br>
+            <b style="font-size:125%">Webdroid Studio</b><br>
+            <b>for Android</b><br>
+            <div class="mdui-center" style="width:fit-content">
+            <pre style="text-align:left">    VERSION <script>document.write(wd.getVersionName())</script>
+      JSAPI <script>document.write(wd.getVersion())</script>
+SOURCE CODE <a href="javascript:Dedroid.jumpUrl('https://github.com/1503Dev/webdroid-for-android/')">GITHUB</a>
+    LECENSE GPLv3
+        OSS <a href="javascript:Dedroid.jumpUrl('https://github.com/TheChuan1503/DedroidUtil/')">DedroidUtil</a>
+            <a href="javascript:Dedroid.jumpUrl('https://github.com/AbdurazaaqMohammed/AXML-Editor/')">AXML-Editor</a></pre>
+            </div>
+        </center>
+    </div>
+    
+    <div
+        class="mdui-dialog"
+        id="dialog_create">
+        
+        <div class="template_selector" id="template_selector">
+            <div class="line mdui-row-xs-3 mdui-row-sm-5">
+                <div class="template mdui-col mdui-ripple" name='0'>
+                    <img src="src/img/template_no_activity.png">
+                    <div>无内容</div>
+                </div>
+                <div class="template mdui-col mdui-ripple" name='1'>
+                    <img src="src/img/template_default_contents_activity.png">
+                    <div>JSAPI 演示</div>
+                </div>
+                <div selected class="template mdui-col mdui-ripple" name='2'>
+                    <img src="src/img/template_empty_activity.png">
+                    <div>空项目</div>
+                </div>
+                <div class="template mdui-col mdui-ripple" name='3'>
+                    <img src="src/img/template_basic_activity.png">
+                    <div>基本项目</div>
+                </div>
+                <div class="template mdui-col mdui-ripple" name='4'>
+                    <img src="src/img/template_blank_activity_drawer.png">
+                    <div>侧滑栏</div>
+                </div>
+                <div class="template mdui-col mdui-ripple" name='5'>
+                    <img src="src/img/template_bottom_navigation_activity.png">
+                    <div>底部导航栏</div>
+                </div>
+                <div class="template mdui-col mdui-ripple" name='6'>
+                    <img src="src/img/template_blank_activity_tabs.png">
+                    <div>选项卡</div>
+                </div>
+                <div class="template mdui-col mdui-ripple" disabled name='7'>
+                    <img src="src/img/template_bootstrap.png">
+                    <div>Bootstrap</div>
+                </div>
+                <div class="template mdui-col mdui-ripple" disabled name='8'>
+                    <img src="src/img/template_vue.png">
+                    <div>Vue</div>
+                </div>
+            </div>
+        </div>
+        <form style="margin:16px 0px 0px 16px">
+            <label class="mdui-radio">
+                <input type="radio" name="my" checked=""/>
+                <i class="mdui-radio-icon"></i>
+                Material Design
+            </label>
+            &nbsp;&nbsp;
+            <label class="mdui-radio">
+                <input type="radio" name="my" id="radio_my"/>
+                <i class="mdui-radio-icon"></i>
+                Material You
+            </label>
+        </form>
+        
+        <label style="margin:0px 0px 16px 16px" class="mdui-checkbox">
+            <input type="checkbox" disabled=""/>
+            <i class="mdui-checkbox-icon"></i>
+            背景透明
+        </label>
+        <br>
+        <span style="margin-left:16px" >Material You 需要 WebView 版本大于 86 才能运行</span>
+        
+        <div class="mdui-dialog-actions">
+            <button mdui-dialog-close class="mdui-btn mdui-ripple">取消</button>
+            <button
+                mdui-dialog-close
+                class="mdui-btn mdui-ripple"
+                onclick="wds.create(
+                    parseInt(document.querySelector('.template[selected]').getAttribute('name'),10),
+                    parseBool(radio_my.checked)
+                )">
+                创建
+            </button>
+        </div>
+    </div>
+    
+    <script src="mdui-1/js/mdui.min.js"></script>
+    <script>
+        if(wd.isDarkMode()){
+            $('body').addClass("mdui-theme-layout-dark")
+        }
+        wd.regDarkModeChangeEvent('onDarkChange')
+        onDarkChange=function(s){
+            if(s){
+                $('body').addClass("mdui-theme-layout-dark")
+            } else {
+                $('body').removeClass("mdui-theme-layout-dark")
+            }
+        }
+        function parseBool(str){
+            if(str===true) return true
+            if(str===false) return false
+            if(str.toLowerCase()=="true") return true
+            return false
+        }
+        if (!("wds" in window)) {
+            wds = {
+                listProject: function() {
+                    return '["wds"]'
+                },
+                getProjectDir:function(n){
+                    return "http://localhost:8000/1503Dev/WebProjects/"+n+"/"
+                },
+                create:function(a,b){
+                    wd.toast(a+"\n"+b)
+                }
+            }
+        }
+        
+        function getUpdate(r,c){
+            if(r!==void 0){
+                if(r===false){
+                    return
+                }
+                r=decode(r).replace(/\+/g,' ')
+                let data=JSON.parse(r)
+                if (wd.getVersionCode()<data.version_code){
+                    mdui.confirm(
+                        data.version_name,
+                        '有新版本',
+                        function(){
+                            Dedroid.jumpUrl(data.update_url)
+                        },
+                        function(){},
+                        {
+                            confirmText:'更新'
+                        })
+                }
+                return
+            }
+            wd.httpGet(
+                'https://verc.1503dev.top/api/lasted/?app=Webdroid_Studio_Android',
+                'getUpdate',
+                0)
+        }
+        
+        function encode(s){
+            return encodeURIComponent(s)
+        }
+        
+        function decode(s){
+            return decodeURIComponent(s)
+        }
+        
+        getUpdate()
+        
+        now_nav=1
+
+        function switchNav(id) {
+            if(id==now_nav) return
+            now_nav=id
+            let fadeTime = 100
+            document.querySelectorAll(".nav").forEach(function(e) {
+                $("#" + e.id).fadeOut(fadeTime)
+            })
+            setTimeout(function() {
+                $("#nav-" + id).fadeIn(fadeTime)
+            }, fadeTime)
+        }
+        
+        project_list_def=project_list.innerHTML
+        function loadProjects(){
+            project_list.innerHTML=""
+            let h=""
+            projects=JSON.parse(wds.listProject())
+            projects.forEach(function(e){
+                h=h+project_list_def.replace("{{ project_name }}",e)
+                    .replace("{{ img }}",wds.getProjectDir(e)+"icon.png")
+                    .replace("{{ pack_name }}",encode(e))
+            })
+            project_list.innerHTML=h
+            project_list.style.display="block"
+            
+        }
+        editing_project=""
+        editor_def=editor.innerHTML
+        function _edit(n){
+            editor.innerHTML=""
+            let info=JSON.parse(wds.getProjectInfo(n))
+            editor.innerHTML=editor_def.replace("{{ app_name }}",info.app_name)
+                .replace("{{ version_name }}",info.version_name)
+                .replace("{{ version_code }}",info.version_code)
+        }
+        function edit(n){
+            n=decode(n)
+            editing_project=n
+            $('[show="no-editing-project"]').attr("style","display:none")
+            $('[show="has-editing-project"]').attr("style","display:block")
+            _edit(n)
+            document.querySelector("a[value=\"2\"]").click()
+        }
+        function gv(e){
+            return document.querySelector("#"+e).getAttribute("value")
+        }
+        function save(){
+            wds.save(editing_project,app_name.value,version_name.value,parseInt(editor_version_code.value))
+        }
+        function pack(){
+            n=editing_project
+            mdui.confirm("是否打包"+n,function(){
+                wd.toast('正在打包')
+                wds.pack(n)
+            })
+        }
+        function run(){
+            wds.run(editing_project)
+        }
+        function dev_options(){
+            mdui.confirm("开发人员选项含有不稳定的内容，如果出错，请清除Webdroid Studio的数据，是否继续前往",
+                '警告',
+                function(){
+                    Dedroid.prompt(0,"",'输入调试码和调试内容','void',"")
+                })
+        }
+        function enable_my(){
+            let ver=getChromeVersion()
+            if(ver<86){
+                wd.toastLong("你的WebView版本("+ver+")<86，无法启用")
+            } else {
+                wds.setMyEnable(true)
+                wds.putString('index_url',"file:///android_asset/local_html/index.html")
+                wd.toast('请重启应用')
+            }
+        }
+        function del(p){
+            mdui.confirm('确定删除'+p+'?',
+                function(){
+                    mdui.confirm('执意要删除'+p+'吗?',
+                        '最后一次询问',
+                        function(){
+                            $('[show="no-editing-project"]').attr("style","width:100%;margin-left:16px")
+                            $('[show="has-editing-project"]').attr("style","display:none")
+                            wds.del(p)
+                        })
+                })
+        }
+        document.querySelectorAll('.template:not([disabled])').forEach(function(i){
+            i.addEventListener('click',function(e){
+                document.querySelectorAll('.template').forEach(function(i){
+                    i.removeAttribute('selected')
+                })
+                i.setAttribute('selected',true)
+            })
+        })
+        setInterval(function(){
+            if(projects!=JSON.parse(wds.listProject())){
+                loadProjects()
+            }
+        },1000)
+        loadProjects()
+    </script>
+</body>
+
+</html>

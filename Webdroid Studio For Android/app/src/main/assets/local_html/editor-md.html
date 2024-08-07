@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" />
+    <meta name="renderer" content="webkit" />
+    <link rel="stylesheet" href="mdui-1/css/mdui.min.css">
+    <script src="mdui-1/js/mdui.min.js"></script>
+    <script src="jq.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+    <style>
+        mdui-list-item *{
+            background:transparent;
+        }
+        
+        *{
+            user-select:none;
+        }
+        
+        body{
+            padding:0px;
+            margin:0px;
+        }
+        
+        #editorView{
+            width:100%;
+            height:calc(100vh - 56px - 16px);
+        }
+        
+        .bar_top{
+            height:16px;
+            box-sizing:border-box;
+            padding:2px;
+            font:12px monospace;
+        }
+        
+        #puncBar{
+            position: fixed;
+            left: 0px;
+            bottom: 0px;
+            width: 100%;
+            z-index: 10;
+        }
+        #puncBar .header{
+            width: 100%;
+            height: 32px;
+        }
+        #puncBar .header .close-btn{
+            position: absolute;
+            right: 4px;
+            top: 0px;
+            z-index: 11;
+        }
+        #puncBar .body{
+            background: gray;
+            box-shadow: 0px 0px 5px rgba(0,0,0,0.4);
+            z-index: 15;
+        }
+    </style>
+</head>
+
+<body class="mdui-theme-accent-orange mdui-theme-primary-teal mdui-appbar-with-toolbar">
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const project = urlParams.get('project');
+        //if(!project||project=="") window.location.replace("?project=wds")
+    </script>
+    <div id="inner">
+        <div class="mdui-appbar mdui-appbar-fixed">
+            <div class="mdui-toolbar mdui-color-theme">
+                <a class="mdui-btn mdui-btn-icon" mdui-drawer="{target: '#dra_files'}">
+                    <i class="mdui-icon material-icons">menu</i>
+                </a>
+                <a class="mdui-typo-title">
+                    <script>
+                        document.write(project)
+                    </script>
+                </a>
+                <div class="mdui-toolbar-spacer"></div>
+                <a style="display:none;" class="mdui-btn mdui-btn-icon" onclick="exit()">
+                    <i class="mdui-icon material-icons">exit_to_app</i>
+                </a>
+                <a class="mdui-btn mdui-btn-icon" mdui-dialog="{target: '#settingsDialog'}">
+                    <i class="mdui-icon material-icons">settings</i>
+                </a>
+                <a class="mdui-btn mdui-btn-icon" onclick="undo()">
+                    <i class="mdui-icon material-icons">undo</i>
+                </a>
+                <a class="mdui-btn mdui-btn-icon" onclick="redo()">
+                    <i class="mdui-icon material-icons">redo</i>
+                </a>
+                <a class="mdui-btn mdui-btn-icon" onclick="editor.focus();save();wd.toast('保存成功')">
+                    <i class="mdui-icon material-icons">save</i>
+                </a>
+                <a class="mdui-btn mdui-btn-icon" onclick="save();wds.runFile(project,file)">
+                    <i class="mdui-icon material-icons">play_arrow</i>
+                </a>
+            </div>
+        </div>
+        <div class="bar_top">
+            <div id="label_file"></div>
+        </div>
+        <div id="editorView"></div>
+        <div id="puncBar">
+            <div class="header">
+                <button onclick="$('#puncBar>.body').slideToggle()" class="mdui-btn mdui-btn-icon mdui-ripple close-btn">
+                    <i class="mdui-icon material-icons">swap_vert</i>
+                </button>
+            </div>
+            <div class="body">
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">&lt;</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">&gt;</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">{</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">}</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">[</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">]</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">(</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">)</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">:</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">;</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">$</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">'</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">"</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">=</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">?</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">#</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">!</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">/</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">\</span>
+                </div>
+                <div class="mdui-chip">
+                    <span class="mdui-chip-title">_</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="settingsDialog" class="mdui-dialog">
+        <div style="margin:16px">
+            <span>字体大小</span>
+            <label class="mdui-slider mdui-slider-discrete">
+                <input id="text_size" type="range" value="14" step="1" min="2" max="20"/>
+            </label>
+        </div>
+    </div>
+    
+    <div class="mdui-drawer" id="dra_files">
+        <button
+            onclick="path='html';go('/')"
+            class="mdui-btn mdui-btn-dense mdui-color-theme-accent mdui-ripple"
+            style="margin:8px;width:calc(100% - 16px)">
+            回到项目
+        </button>
+        <br>
+        <button
+            onclick="go('..')"
+            class="mdui-btn mdui-btn-dense mdui-color-theme-accent mdui-ripple"
+            style="margin:8px;width:calc(100% - 16px)">
+            返回上一级
+        </button>
+        <ul class="mdui-list" id="file_list">
+            <li class="mdui-list-item mdui-ripple" disable onclick="go('{{ file_ec }}')">
+                <i class="mdui-list-item-icon mdui-icon material-icons">{{ icon }}</i>
+                <div class="mdui-list-item-content">{{ file }}</div>
+            </li>
+        </ul>
+    </div>
+    
+    <script>
+        if(!("wds" in window)){
+            wds={
+                getString:function(){
+                    return ''
+                },
+                putString:function(){
+                    return
+                }
+            }
+        }
+        var root=wd.getStoragePath()+"/1503Dev/WebProjects/"+project+"/"
+        var path="html/"
+        var file="html/index.html"
+        var editor_theme="chrome"
+        if(wd.isDarkMode()){
+            $('body').addClass("mdui-theme-layout-dark")
+            editor_theme="tomorrow_night"
+        }
+        wd.regDarkModeChangeEvent('onDarkChange')
+        onDarkChange=function(s){
+            if(s){
+                $('body').addClass("mdui-theme-layout-dark")
+                editor_theme="tomorrow_night"
+            } else {
+                $('body').removeClass("mdui-theme-layout-dark")
+                editor_theme="chrome"
+            }
+            editor.setTheme("ace/theme/"+editor_theme);
+        }
+        function listFile(dir){
+            let fp=root+dir
+            return JSON.parse(wd.listFile(fp))
+        }
+        function encode(s){
+            return encodeURIComponent(s)
+        }
+        function decode(s){
+            return decodeURIComponent(s)
+        }
+        function getFileIcon(f){
+            if(wd.isDir(f)) return 'folder'
+            let a=f.split('.')
+            switch(a[a.length-1].toLowerCase()){
+                case 'html':
+                case 'htm':
+                case 'js':
+                    return 'code'
+                case 'css':
+                    return 'style'
+                case 'png':
+                case 'jpg':
+                case 'svg':
+                case 'gif':
+                    return 'image'
+                default:
+                    return 'insert_drive_file'
+            }
+        }
+        function fileDisabled(f){
+            if(wd.isDir(f)) return 'disabled'
+            return ''
+        }
+        file_list_def=file_list.innerHTML
+        function listf(){
+            file_list.innerHTML=""
+            let h=""
+            let files=listFile(path)
+            files.forEach(function(e){
+                h=h+file_list_def
+                    .replace('disable',fileDisabled(root+path+"/"+e))
+                    .replace('{{ file }}',e)
+                    .replace('{{ file_ec }}',encode(e))
+                    .replace('{{ icon }}',getFileIcon(root+path+"/"+e))
+            })
+            file_list.innerHTML=h
+        }
+        function initFiles(){
+            listf()
+        }
+        initFiles()
+        function go(f){
+            f=decode(f)
+            if(wd.isDir(root+path+f)){
+                path=path+f+"/"
+                listf()
+                return
+            }
+            loadContent(path+f)
+            dra_files.open=false
+        }
+        function save(f=file){
+            let fp=wd.getStoragePath()+"/1503Dev/WebProjects/"+project+"/"+f
+            let c=Dedroid.writeFile(fp,editor.getSession().getValue())
+        }
+        function undo(){
+            editor.focus()
+            if(editor.getSession().getUndoManager().canUndo()){
+                editor.undo()
+            } else wd.toast("不可撤销")
+        }
+        function redo(){
+            editor.focus()
+            if(editor.getSession().getUndoManager().canRedo()){
+                editor.redo()
+            } else wd.toast("不可重做")
+        }
+        function getType(f){
+            r1=f.substring(f.length-4).toLowerCase()
+            r2=f.substring(f.length-3).toLowerCase()
+            r3=f.substring(f.length-2).toLowerCase()
+            if(r1=="html") return "html"
+            if(r1=="json") return "json"
+            if(r2=="htm") return "html"
+            if(r2=="css") return "css"
+            if(r3=="js") return "javascript"
+            return f
+        }
+        function initEditor(){
+            let fs=wds.getString('editor_text_size')
+            if(fs=="") fs="14px"
+            text_size.value=fs.split('px')[0]
+            editor = ace.edit("editorView");
+            editor.setTheme("ace/theme/"+editor_theme);
+            ace.require("ace/ext/language_tools");
+            editor.session.setMode("ace/mode/html");
+            editor.setOptions({
+                enableBasicAutocompletion: true,
+                enableLiveAutocompletion: true,
+                fontSize: fs,
+                showPrintMargin: false,
+                enableSnippets: true
+            });
+        }
+        initEditor()
+        function loadContent(f=file){
+            let fp=wd.getStoragePath()+"/1503Dev/WebProjects/"+project+"/"+f
+            if((!wd.isFileExists(fp))||f=="/"||f==""||wd.isDir(fp)){
+                wd.toast(fp+"不存在")
+                return
+            }
+            editor.session.setMode("ace/mode/"+getType(f));
+            file=f
+            label_file.innerHTML=file.split('/')[file.split('/').length-1]
+            let c=Dedroid.readFile(fp)
+            editor.setValue(c)
+            editor.getSession().getSelection().clearSelection()
+            editor.moveCursorTo(0,0,false)
+        }
+        loadContent(file)
+        function openFile(){
+            mdui.prompt("打开文件",
+                function(v){
+                    window.loadContent(v)
+                },
+                function(){},
+                {
+                    defaultValue:file
+                }
+            );
+        }
+        function exit(){
+            mdui.confirm("是否保存",
+                function(){
+                    save()
+                    wd.finish()
+                },
+                function(){
+                    wd.finish()
+                },
+                {
+                    confirmText:'保存并退出',
+                    cancelText:'退出',
+                    closeOnEsc:true
+                })
+        }
+        text_size.addEventListener("change", function(){
+            wds.putString("editor_text_size",text_size.value+"px")
+            editor.setOptions({
+                fontSize: text_size.value+"px"
+            });
+        });
+        document.querySelectorAll('#puncBar .body .mdui-chip').forEach(function(e){
+            e.addEventListener('click',function(ev){
+                editor.focus()
+                let text=e
+                    .innerHTML
+                    .split('<span class="mdui-chip-title">')[1]
+                    .split('</span>')[0]
+                    .replace(/\&lt\;/g,'<')
+                    .replace(/\&gt\;/g,'>')
+                editor.getSession().insert(editor.getCursorPosition(),text)
+            })
+        })
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="@android:style/Theme.Holo.Light.DarkActionBar">
+		<!-- 设置背景色 -->
+		<item name="android:windowBackground">#EE45E4</item>
+		<!-- 设置图标 -->
+		<!--item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher</item>
+		<!-- 设置图标缩放类型 
+		<item name="windowSplashScreenIconBackgroundColor">#FFEE45E4</item>
+		<!-- 设置进入应用时的过渡效果 -->
+		<!-- item name="postSplashScreenTheme">@style/Theme.MyApp</item-->
+	</style>
+</resources>

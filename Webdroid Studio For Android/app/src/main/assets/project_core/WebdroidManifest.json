@@ -1,0 +1,12 @@
+{
+    "manifest":{
+        "application_name":"",
+        "launcher_name":"<AppName>",
+        "version_name":"1.0.0",
+        "version_code":1,
+        "package":""
+    },
+    "settings":{
+        "enabled_android_manifest_xml":false
+    }
+}

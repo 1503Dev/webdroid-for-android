@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="lib/mdui-1/css/mdui.min.css">
+    <script src="lib/jq.js"></script>
+    <style>
+        * {
+            user-select: none;
+        }
+    </style>
+</head>
+
+<body class="mdui-theme-primary-teal mdui-theme-accent-amber mdui-appbar-with-toolbar">
+    <div class="mdui-appbar mdui-appbar-fixed">
+        <div class="mdui-toolbar mdui-color-theme">
+            <a class="mdui-typo-title">
+                <script>document.write(wd.getAppName())</script>
+            </a>
+        </div>
+    </div>
+    
+    <div class="mdui-container" style="padding: 8px 0px 8px;">
+        <!-- Your code here -->
+    </div>
+    
+    <button class="mdui-fab mdui-color-theme-accent mdui-ripple mdui-fab-fixed">
+        <i class="mdui-icon material-icons">add</i>
+    </button>
+
+    <script src="lib/mdui-1/js/mdui.min.js"></script>
+    <script>
+        function initDarkMode(){
+            if(wd.isDarkMode()){
+                $('body').addClass('mdui-theme-layout-dark')
+            } else {
+                $('body').removeClass('mdui-theme-layout-dark')
+            }
+        }
+        initDarkMode()
+        wd.regDarkModeChangeEvent('initDarkMode')
+    </script>
+</body>
+
+</html>

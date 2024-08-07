@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="lib/mdui/mdui.min.css">
+    <link rel="stylesheet" href="lib/mdui/icon.css">
+    <script src="lib/mdui/mdui.min.js"></script>
+    <script src="lib/jq.js"></script>
+    <script>
+        mdui.setColorScheme('#009688')
+    </script>
+    <style>
+        * {
+            user-select: none;
+        }
+        body {
+            margin: 0px;
+        }
+        body > mdui-tabs .container {
+            margin: 0px;
+            padding: 0px 8px 8px 8px;
+            width: 100%;
+            height: calc(100vh - 112px);
+            box-sizing: border-box;
+            overflow: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <mdui-top-app-bar style="position: relative;">
+        <mdui-top-app-bar-title>
+            <script>document.write(wd.getAppName())</script>
+        </mdui-top-app-bar-title>
+    </mdui-top-app-bar>
+    
+    <mdui-tabs value="tab-1" full-width>
+        <mdui-tab value="tab-1">Tab 1</mdui-tab>
+        <mdui-tab value="tab-2">Tab 2</mdui-tab>
+        <mdui-tab value="tab-3">Tab 3</mdui-tab>
+
+        <mdui-tab-panel class="container" slot="panel" value="tab-1">
+            Panel 1
+            <!-- Your code here -->
+        </mdui-tab-panel>
+        <mdui-tab-panel class="container" slot="panel" value="tab-2">
+            Panel 2
+            <!-- Your code here -->
+        </mdui-tab-panel>
+        <mdui-tab-panel class="container" slot="panel" value="tab-3">
+            Panel 3
+            <!-- Your code here -->
+        </mdui-tab-panel>
+    </mdui-tabs>
+
+    <script>
+        function initDarkMode(){
+            if(wd.isDarkMode()){
+                $('body').addClass('mdui-theme-dark')
+            } else {
+                $('body').removeClass('mdui-theme-dark')
+            }
+        }
+        initDarkMode()
+        wd.regDarkModeChangeEvent('initDarkMode')
+    </script>
+</body>
+
+</html>
